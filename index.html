@@ -109,6 +109,12 @@
             transform: translateY(-1px);
         }
 
+        .btn-primary:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .class-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -444,7 +450,7 @@
                 onkeypress="if(event.key === 'Enter') checkPassword()"
             >
             <div id="errorMessage" class="error-message">Falsches Passwort. Bitte versuchen Sie es erneut.</div>
-            <button class="btn-primary" onclick="checkPassword()">App starten</button>
+            <button class="btn-primary" id="startButton" onclick="checkPassword()">App starten</button>
         </div>
     </div>
 
@@ -517,284 +523,24 @@
     </div>
 
     <script>
-        // Passwort-Prüfung
+        // Konfiguration
         const CORRECT_PASSWORD = "123";
+        const WEBHOOK_URL = "https://n8n.autoprozessagentur.cloud/webhook-test/05b9c0bc-8a54-4dad-a63c-d5fbb1d7284c";
 
-        function checkPassword() {
-            const input = document.getElementById('passwordInput');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            if (input.value === CORRECT_PASSWORD) {
-                errorMessage.style.display = 'none';
-                input.value = ''; // Passwortfeld leeren
-                startApp();
-            } else {
-                errorMessage.style.display = 'block';
-                input.value = ''; // Passwortfeld leeren
-                input.focus();
-            }
-        }
-
-        // Schülerdaten
-        const students = [
-            { id: 1, name: 'Anna Müller', status: null },
-            { id: 2, name: 'Ben Schmidt', status: null },
-            { id: 3, name: 'Clara Wagner', status: null },
-            { id: 4, name: 'David Fischer', status: null },
-            { id: 5, name: 'Emma Bauer', status: null },
-            { id: 6, name: 'Felix Weber', status: null },
-            { id: 7, name: 'Greta Koch', status: null },
-            { id: 8, name: 'Hannah Meyer', status: null }
-        ];
-
-        let selectedDay = '';
-        let selectedClass = '';
-        let studentsHistory = []; // Stack für Rückgängig-Funktion
-        
-        const classesPerDay = {
-            'Samstag': [
-                ['Klasse 1', 'Klasse 2'],
-                ['Klasse 3 Quran', 'Klasse 3 Deen'],
-                ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
-            ],
-            'Sonntag': [
-                ['Vorschule'],
-                ['Klasse 1', 'Klasse 2'],
-                ['Klasse 3 Quran', 'Klasse 3 Deen'],
-                ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
-            ]
-        };
-
-        // App starten - zur Tag-Auswahl
-        function startApp() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('dayScreen').classList.remove('hidden');
-        }
-
-        // Tag auswählen
-        function selectDay(day) {
-            selectedDay = day;
-            document.getElementById('dayScreen').classList.add('hidden');
-            
-            // Klassen-Buttons erstellen
-            const classButtons = document.getElementById('classButtons');
-            classButtons.innerHTML = '';
-            
-            const classRows = classesPerDay[day];
-            classRows.forEach(row => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
-                
-                row.forEach(className => {
-                    const button = document.createElement('button');
-                    button.className = 'btn-primary';
-                    button.textContent = className;
-                    button.onclick = () => selectClass(className);
-                    rowDiv.appendChild(button);
+        // Webhook senden
+        async function sendWebhook(data) {
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
                 });
-                
-                classButtons.appendChild(rowDiv);
-            });
-            
-            document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
-            document.getElementById('classScreen').classList.remove('hidden');
-        }
 
-        // Klasse auswählen
-        function selectClass(className) {
-            selectedClass = className;
-            document.getElementById('classScreen').classList.add('hidden');
-            document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('mainScreen').classList.remove('hidden');
-            document.getElementById('classTitle').textContent = className;
-            studentsHistory = []; // History zurücksetzen
-            saveHistory(); // Initial-Zustand speichern
-            renderStudents();
-        }
-
-        // Zurück zur Startseite
-        function goBackToStart() {
-            document.getElementById('dayScreen').classList.add('hidden');
-            document.getElementById('startScreen').classList.remove('hidden');
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        // Zurück zur Tag-Auswahl
-        function goBackToDay() {
-            document.getElementById('classScreen').classList.add('hidden');
-            document.getElementById('dayScreen').classList.remove('hidden');
-        }
-
-        // Zurück zur Klassen-Auswahl
-        function goBack() {
-            document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('classScreen').classList.remove('hidden');
-            resetAttendance();
-        }
-
-        // History speichern
-        function saveHistory() {
-            // Aktuellen Zustand im History-Stack speichern
-            studentsHistory.push(JSON.parse(JSON.stringify(students)));
-            // Maximal 50 Schritte speichern
-            if (studentsHistory.length > 50) {
-                studentsHistory.shift();
-            }
-            checkUndoButton();
-        }
-
-        // Prüfen ob Undo-Button angezeigt werden soll
-        function checkUndoButton() {
-            // Button anzeigen wenn mehr als ein Zustand gespeichert ist
-            document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
-        }
-
-        // Änderungen rückgängig machen
-        function undoChanges() {
-            if (studentsHistory.length <= 1) {
-                return; // Nichts zum Rückgängig machen
-            }
-            
-            // Aktuellen Zustand entfernen
-            studentsHistory.pop();
-            
-            // Vorherigen Zustand wiederherstellen
-            const previousState = studentsHistory[studentsHistory.length - 1];
-            students.length = 0;
-            students.push(...JSON.parse(JSON.stringify(previousState)));
-            
-            renderStudents();
-        }
-
-        // Anwesenheit zurücksetzen
-        function resetAttendance() {
-            students.forEach(student => student.status = null);
-            renderStudents();
-        }
-
-        // Schüler rendern
-        function renderStudents() {
-            const list = document.getElementById('studentsList');
-            list.innerHTML = '';
-
-            students.forEach(student => {
-                const card = document.createElement('div');
-                card.className = 'student-card';
-                
-                card.innerHTML = `
-                    <div class="student-name">${student.name}</div>
-                    <div class="student-actions">
-                        <div class="status-buttons">
-                            <button 
-                                class="btn-status ${student.status === 'present' ? 'present' : ''}" 
-                                onclick="toggleStatus(${student.id}, 'present')"
-                            >✓</button>
-                            <button 
-                                class="btn-status ${student.status === 'late' ? 'late' : ''}" 
-                                onclick="toggleStatus(${student.id}, 'late')"
-                            >🕐</button>
-                            <button 
-                                class="btn-status ${student.status === 'absent' ? 'absent' : ''}" 
-                                onclick="toggleStatus(${student.id}, 'absent')"
-                            >✕</button>
-                        </div>
-                        <button 
-                            class="btn-delete" 
-                            onclick="deleteStudent(${student.id})"
-                            title="Schüler entfernen"
-                        >🗑️</button>
-                    </div>
-                `;
-                
-                list.appendChild(card);
-            });
-
-            updateStats();
-            checkUndoButton();
-        }
-
-        // Status umschalten
-        function toggleStatus(id, status) {
-            saveHistory(); // Zustand vor Änderung speichern
-            const student = students.find(s => s.id === id);
-            if (student) {
-                student.status = student.status === status ? null : status;
-                renderStudents();
-            }
-        }
-
-        // Statistiken aktualisieren
-        function updateStats() {
-            const present = students.filter(s => s.status === 'present').length;
-            const absent = students.filter(s => s.status === 'absent').length;
-            const late = students.filter(s => s.status === 'late').length;
-
-            document.getElementById('statTotal').textContent = students.length;
-            document.getElementById('statPresent').textContent = present;
-            document.getElementById('statAbsent').textContent = absent;
-            document.getElementById('statLate').textContent = late;
-        }
-
-        // Neuen Schüler hinzufügen
-        function addStudent() {
-            const firstName = document.getElementById('firstNameInput').value.trim();
-            const lastName = document.getElementById('lastNameInput').value.trim();
-
-            if (!firstName || !lastName) {
-                alert('Bitte geben Sie Vor- und Nachname ein.');
-                return;
-            }
-
-            saveHistory(); // Zustand vor Änderung speichern
-
-            const newStudent = {
-                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
-                name: `${firstName} ${lastName}`,
-                status: null
-            };
-
-            students.push(newStudent);
-            
-            // Eingabefelder leeren
-            document.getElementById('firstNameInput').value = '';
-            document.getElementById('lastNameInput').value = '';
-
-            renderStudents();
-        }
-
-        // Schüler löschen
-        function deleteStudent(id) {
-            const student = students.find(s => s.id === id);
-            if (!student) return;
-
-            if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
-                saveHistory(); // Zustand vor Änderung speichern
-                const index = students.findIndex(s => s.id === id);
-                if (index > -1) {
-                    students.splice(index, 1);
-                    renderStudents();
-                }
-            }
-        }
-
-        // Anwesenheit speichern
-        function saveAttendance() {
-            if (students.length === 0) {
-                alert('Es sind keine Schüler in der Liste.');
-                return;
-            }
-
-            const data = {
-                day: selectedDay,
-                class: selectedClass,
-                date: new Date().toLocaleDateString('de-DE'),
-                time: new Date().toLocaleTimeString('de-DE'),
-                students: students
-            };
-
-            console.log('Gespeicherte Anwesenheit:', data);
-            alert(`Anwesenheit für ${selectedDay} - ${selectedClass} wurde erfolgreich gespeichert!`);
-        }
-    </script>
-</body>
-</html>
+                if (response.ok) {
+                    console.log('Webhook erfolgreich gesendet:', await response.text());
+                    return true;
+                } else {
+                    console.error('Webhook Fehler:', response.status, response.statusText);
+                    return
