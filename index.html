@@ -109,6 +109,12 @@
             transform: translateY(-1px);
         }
 
+        .btn-primary:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .class-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -156,21 +162,6 @@
 
         .btn-back:hover {
             color: #4338CA;
-        }
-
-        .class-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .class-input:focus {
-            border-color: #4F46E5;
         }
 
         .stats-grid {
@@ -441,10 +432,9 @@
                 id="passwordInput" 
                 class="password-input" 
                 placeholder="Passwort eingeben"
-                onkeypress="if(event.key === 'Enter') checkPassword()"
             >
             <div id="errorMessage" class="error-message">Falsches Passwort. Bitte versuchen Sie es erneut.</div>
-            <button class="btn-primary" onclick="checkPassword()">App starten</button>
+            <button class="btn-primary" id="startButton">App starten</button>
         </div>
     </div>
 
@@ -517,20 +507,89 @@
     </div>
 
     <script>
-        // Passwort-Prüfung
+        // Konfiguration
         const CORRECT_PASSWORD = "123";
+        const WEBHOOK_URL = "https://n8n.autoprozessagentur.cloud/webhook-test/05b9c0bc-8a54-4dad-a63c-d5fbb1d7284c";
 
+        // Webhook senden (mit try-catch für CORS-Fehler)
+        function sendWebhook(data) {
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log('Webhook Response Status:', response.status);
+                return response.text();
+            })
+            .then(data => {
+                console.log('Webhook erfolgreich gesendet:', data);
+            })
+            .catch(error => {
+                console.log('Webhook-Info: Anfrage wurde gesendet (CORS-Fehler in Console sind bei Webhooks normal)');
+                console.error('Fehler:', error);
+            });
+        }
+
+        // Event Listener für Button und Enter-Taste
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            const startButton = document.getElementById('startButton');
+            
+            // Enter-Taste im Passwort-Feld
+            passwordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+            
+            // Button-Click
+            startButton.addEventListener('click', function() {
+                checkPassword();
+            });
+        });
+
+        // Passwort-Prüfung
         function checkPassword() {
             const input = document.getElementById('passwordInput');
             const errorMessage = document.getElementById('errorMessage');
+            const startButton = document.getElementById('startButton');
+            
+            console.log('Eingegebenes Passwort:', input.value); // Debug
+            console.log('Korrektes Passwort:', CORRECT_PASSWORD); // Debug
             
             if (input.value === CORRECT_PASSWORD) {
+                console.log('Passwort korrekt!'); // Debug
                 errorMessage.style.display = 'none';
-                input.value = ''; // Passwortfeld leeren
-                startApp();
+                
+                // Button-Status ändern
+                startButton.disabled = true;
+                startButton.textContent = 'Wird gestartet...';
+                
+                // Webhook-Daten vorbereiten und senden
+                const webhookData = {
+                    event: 'app_started',
+                    timestamp: new Date().toISOString(),
+                    message: 'Anwesenheits-App wurde gestartet'
+                };
+                
+                console.log('Sende Webhook...'); // Debug
+                sendWebhook(webhookData);
+                
+                // App starten (kurze Verzögerung für Webhook)
+                setTimeout(function() {
+                    input.value = '';
+                    startApp();
+                    startButton.disabled = false;
+                    startButton.textContent = 'App starten';
+                }, 500);
+                
             } else {
+                console.log('Passwort falsch!'); // Debug
                 errorMessage.style.display = 'block';
-                input.value = ''; // Passwortfeld leeren
+                input.value = '';
                 input.focus();
             }
         }
@@ -549,7 +608,7 @@
 
         let selectedDay = '';
         let selectedClass = '';
-        let studentsHistory = []; // Stack für Rückgängig-Funktion
+        let studentsHistory = [];
         
         const classesPerDay = {
             'Samstag': [
@@ -565,7 +624,7 @@
             ]
         };
 
-        // App starten - zur Tag-Auswahl
+        // App starten
         function startApp() {
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('dayScreen').classList.remove('hidden');
@@ -576,7 +635,6 @@
             selectedDay = day;
             document.getElementById('dayScreen').classList.add('hidden');
             
-            // Klassen-Buttons erstellen
             const classButtons = document.getElementById('classButtons');
             classButtons.innerHTML = '';
             
@@ -607,8 +665,8 @@
             document.getElementById('mainScreen').style.display = 'block';
             document.getElementById('mainScreen').classList.remove('hidden');
             document.getElementById('classTitle').textContent = className;
-            studentsHistory = []; // History zurücksetzen
-            saveHistory(); // Initial-Zustand speichern
+            studentsHistory = [];
+            saveHistory();
             renderStudents();
         }
 
@@ -634,9 +692,7 @@
 
         // History speichern
         function saveHistory() {
-            // Aktuellen Zustand im History-Stack speichern
             studentsHistory.push(JSON.parse(JSON.stringify(students)));
-            // Maximal 50 Schritte speichern
             if (studentsHistory.length > 50) {
                 studentsHistory.shift();
             }
@@ -645,20 +701,16 @@
 
         // Prüfen ob Undo-Button angezeigt werden soll
         function checkUndoButton() {
-            // Button anzeigen wenn mehr als ein Zustand gespeichert ist
             document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
         }
 
         // Änderungen rückgängig machen
         function undoChanges() {
             if (studentsHistory.length <= 1) {
-                return; // Nichts zum Rückgängig machen
+                return;
             }
             
-            // Aktuellen Zustand entfernen
             studentsHistory.pop();
-            
-            // Vorherigen Zustand wiederherstellen
             const previousState = studentsHistory[studentsHistory.length - 1];
             students.length = 0;
             students.push(...JSON.parse(JSON.stringify(previousState)));
@@ -715,7 +767,7 @@
 
         // Status umschalten
         function toggleStatus(id, status) {
-            saveHistory(); // Zustand vor Änderung speichern
+            saveHistory();
             const student = students.find(s => s.id === id);
             if (student) {
                 student.status = student.status === status ? null : status;
@@ -745,7 +797,7 @@
                 return;
             }
 
-            saveHistory(); // Zustand vor Änderung speichern
+            saveHistory();
 
             const newStudent = {
                 id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
@@ -755,7 +807,6 @@
 
             students.push(newStudent);
             
-            // Eingabefelder leeren
             document.getElementById('firstNameInput').value = '';
             document.getElementById('lastNameInput').value = '';
 
@@ -768,7 +819,7 @@
             if (!student) return;
 
             if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
-                saveHistory(); // Zustand vor Änderung speichern
+                saveHistory();
                 const index = students.findIndex(s => s.id === id);
                 if (index > -1) {
                     students.splice(index, 1);
