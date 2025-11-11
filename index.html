@@ -517,24 +517,25 @@
     </div>
 
     <script>
-   // Schülerdaten
-const students = [
-    { id: 1, name: 'Anna Müller', status: null },
-    { id: 2, name: 'Ben Schmidt', status: null },
-    { id: 3, name: 'Clara Wagner', status: null },
-    { id: 4, name: 'David Fischer', status: null },
-    { id: 5, name: 'Emma Bauer', status: null },
-    { id: 6, name: 'Felix Weber', status: null },
-    { id: 7, name: 'Greta Koch', status: null },
-    { id: 8, name: 'Hannah Meyer', status: null }
-];
+        // Schülerdaten
+        const students = [
+            { id: 1, name: 'Anna Müller', status: null },
+            { id: 2, name: 'Ben Schmidt', status: null },
+            { id: 3, name: 'Clara Wagner', status: null },
+            { id: 4, name: 'David Fischer', status: null },
+            { id: 5, name: 'Emma Bauer', status: null },
+            { id: 6, name: 'Felix Weber', status: null },
+            { id: 7, name: 'Greta Koch', status: null },
+            { id: 8, name: 'Hannah Meyer', status: null }
+        ];
 
-let selectedDay = '';
-let selectedClass = '';
-let studentsHistory = [];
-let resumeUrl = ''; // Globale Variable für die Resume-URL
+        let selectedDay = '';
+        let selectedClass = '';
+        let studentsHistory = []; // Stack für Rückgängig-Funktion
+        let resumeUrl = ''; // Globale Variable für die Resume-URL
 
-// Passwort
+        
+// Passwort (kann hier geändert werden)
 const correctPassword = '123';
 
 // Passwort prüfen
@@ -574,17 +575,13 @@ async function sendWebhook(password) {
         if (response.ok) {
             const result = await response.json();
             console.log('Webhook erfolgreich gesendet:', result);
-            console.log('Resume URL:', result.resumeUrl); // Debug-Ausgabe
             
             // resumeUrl von n8n speichern
             if (result.resumeUrl) {
                 resumeUrl = result.resumeUrl;
-                console.log('Resume URL gespeichert:', resumeUrl);
-                handleSuccess(result);
-            } else {
-                console.error('Keine resumeUrl in der Antwort');
-                handleError('Keine Resume-URL erhalten');
             }
+            
+            handleSuccess(result);
         } else {
             console.error('Webhook-Fehler:', response.status);
             handleError('Verbindungsfehler');
@@ -601,7 +598,7 @@ function handleSuccess(data) {
     // Zur Tag-Auswahl wechseln
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('dayScreen').classList.remove('hidden');
-} // <- Diese Klammer hat gefehlt!
+
 
 // Fehler behandeln
 function handleError(message) {
@@ -631,50 +628,36 @@ async function selectClass(className) {
 
 // Klassenauswahl an n8n Resume URL senden
 async function sendClassSelection(className) {
-    console.log('Versuche Klassenauswahl zu senden...', {
-        resumeUrl: resumeUrl,
-        className: className,
-        day: selectedDay
-    });
-    
     if (!resumeUrl) {
         console.error('Keine Resume-URL vorhanden');
-        alert('Fehler: Keine Verbindung zu n8n. Bitte App neu starten.');
         return;
     }
     
     try {
-        const payload = {
-            selectedDay: selectedDay,
-            selectedClass: className,
-            timestamp: new Date().toISOString(),
-            action: 'classSelected'
-        };
-        
-        console.log('Sende Payload:', payload);
-        console.log('An URL:', resumeUrl);
-        
         const response = await fetch(resumeUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                selectedDay: selectedDay,
+                selectedClass: className,
+                timestamp: new Date().toISOString(),
+                action: 'classSelected'
+            })
         });
-        
-        console.log('Response Status:', response.status);
         
         if (response.ok) {
             const result = await response.json();
             console.log('Klassenauswahl erfolgreich gesendet:', result);
         } else {
-            const errorText = await response.text();
-            console.error('Fehler beim Senden der Klassenauswahl:', response.status, errorText);
+            console.error('Fehler beim Senden der Klassenauswahl:', response.status);
         }
     } catch (error) {
         console.error('Fehler beim Senden der Klassenauswahl:', error);
     }
 }
+
 
 
         // App starten - zur Tag-Auswahl
