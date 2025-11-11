@@ -594,9 +594,6 @@ async function sendWebhook(password) {
 
 // Beispiel wenn n8n eine executionId zurückgibt
 function handleSuccess(data) {
-    if (data.executionId) {
-        resumeUrl = `https://n8n.autoprozessagentur.cloud/webhook-waiting/${data.executionId}`;
-    }
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('dayScreen').classList.remove('hidden');
 }
