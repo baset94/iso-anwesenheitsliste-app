@@ -536,49 +536,56 @@
         // Passwort (kann hier geändert werden)
         const correctPassword = 'lehrer2024';
 
-        // Passwort prüfen
-        function checkPassword() {
-            const password = document.getElementById('passwordInput').value;
-            const errorMsg = document.getElementById('errorMessage');
-            
-            if (password === correctPassword) {
-                errorMsg.style.display = 'none';
-                document.getElementById('passwordInput').value = '';
-                sendWebhook(password);
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
-            }
+    // Passwort prüfen
+    function checkPassword() {
+        const password = document.getElementById('passwordInput').value.trim();
+        const errorMsg = document.getElementById('errorMessage');
+        
+        if (password === correctPassword) {
+            errorMsg.style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            triggerN8nWebhook(password);
+        } else {
+            errorMsg.style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
         }
+    }
 
-        // Webhook aufrufen
-        async function sendWebhook(password) {
-            try {
-                const response = await fetch('https://n8n.autoprozessagentur.cloud/webhook-test/4309f290-7437-462c-8aa8-6319ae8106be', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        password: password,
-                        timestamp: new Date().toISOString(),
-                        action: 'login'
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log('Webhook erfolgreich aufgerufen');
-                    startApp();
-                } else {
-                    console.error('Webhook-Fehler:', response.status);
-                    startApp(); // App trotzdem starten
-                }
-            } catch (error) {
-                console.error('Fehler beim Webhook-Aufruf:', error);
-                startApp(); // App trotzdem starten
+    // n8n Webhook-Trigger (Test-Modus)
+    async function triggerN8nWebhook(password) {
+        const webhookUrl = "https://n8n.autoprozessagentur.cloud/webhook-test/4309f290-7437-462c-8aa8-6319ae8106be";
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "login",
+                    password: password,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                console.error("Webhook-Fehler:", response.status, response.statusText);
+                alert("⚠️ Fehler beim Aufruf der n8n-Webhook: " + response.statusText);
+            } else {
+                console.log("✅ Webhook erfolgreich ausgelöst!");
+                alert("Webhook wurde erfolgreich gesendet!");
             }
+
+            // App trotzdem starten, auch wenn Webhook-Fehler
+            startApp();
+
+        } catch (error) {
+            console.error("Fehler beim Webhook-Aufruf:", error);
+            alert("❌ Netzwerkfehler: Webhook konnte nicht gesendet werden!");
+            startApp();
         }
+    }
 
         // App starten - zur Tag-Auswahl
         function startApp() {
@@ -833,3 +840,4 @@
     </script>
 </body>
 </html>
+
