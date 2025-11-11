@@ -533,8 +533,7 @@
         let selectedClass = '';
         let studentsHistory = []; // Stack für Rückgängig-Funktion
         
-// Passwort (kann hier geändert werden)
-const correctPassword = '123';
+let resumeUrl = ''; // Globale Variable für die Resume-URL
 
 // Passwort prüfen
 function checkPassword() {
@@ -552,7 +551,7 @@ function checkPassword() {
     }
 }
 
-// Webhook an n8n senden
+// Webhook an n8n senden (Initial)
 async function sendWebhook(password) {
     const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
     
@@ -561,18 +560,24 @@ async function sendWebhook(password) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': password  // Passwort als Header-Auth
+                'X-API-KEY': password
             },
             body: JSON.stringify({
                 password: password,
                 timestamp: new Date().toISOString(),
-                // Weitere Daten, die du senden möchtest
+                action: 'login'
             })
         });
         
         if (response.ok) {
             const result = await response.json();
             console.log('Webhook erfolgreich gesendet:', result);
+            
+            // resumeUrl von n8n speichern
+            if (result.resumeUrl) {
+                resumeUrl = result.resumeUrl;
+            }
+            
             handleSuccess(result);
         } else {
             console.error('Webhook-Fehler:', response.status);
@@ -587,16 +592,69 @@ async function sendWebhook(password) {
 // Erfolgreiche Antwort verarbeiten
 function handleSuccess(data) {
     console.log('Erfolgreich authentifiziert:', data);
-    // Direkt zur Tag-Auswahl wechseln
+    // Zur Tag-Auswahl wechseln
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('dayScreen').classList.remove('hidden');
 }
 
-
 // Fehler behandeln
 function handleError(message) {
-    alert('Fehler: ' + message);
+    const errorMsg = document.getElementById('errorMessage');
+    errorMsg.textContent = message;
+    errorMsg.style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
 }
+
+// Klasse auswählen und an n8n senden
+async function selectClass(className) {
+    selectedClass = className;
+    
+    // Klassenauswahl an n8n senden um Wait Node fortzusetzen
+    await sendClassSelection(className);
+    
+    // Zur Hauptansicht wechseln
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('classTitle').textContent = className;
+    studentsHistory = [];
+    saveHistory();
+    renderStudents();
+}
+
+// Klassenauswahl an n8n Resume URL senden
+async function sendClassSelection(className) {
+    if (!resumeUrl) {
+        console.error('Keine Resume-URL vorhanden');
+        return;
+    }
+    
+    try {
+        const response = await fetch(resumeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selectedDay: selectedDay,
+                selectedClass: className,
+                timestamp: new Date().toISOString(),
+                action: 'classSelected'
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Klassenauswahl erfolgreich gesendet:', result);
+        } else {
+            console.error('Fehler beim Senden der Klassenauswahl:', response.status);
+        }
+    } catch (error) {
+        console.error('Fehler beim Senden der Klassenauswahl:', error);
+    }
+}
+
 
 
         // App starten - zur Tag-Auswahl
