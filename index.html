@@ -592,13 +592,14 @@ async function sendWebhook(password) {
     }
 }
 
-// Erfolgreiche Antwort verarbeiten
+// Beispiel wenn n8n eine executionId zurückgibt
 function handleSuccess(data) {
-    console.log('Erfolgreich authentifiziert:', data);
-    // Zur Tag-Auswahl wechseln
+    if (data.executionId) {
+        resumeUrl = `https://n8n.autoprozessagentur.cloud/webhook-waiting/${data.executionId}`;
+    }
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('dayScreen').classList.remove('hidden');
-
+}
 
 // Fehler behandeln
 function handleError(message) {
