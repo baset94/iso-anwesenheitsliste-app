@@ -554,67 +554,46 @@ function checkPassword() {
 
 // Webhook an n8n senden
 async function sendWebhook(password) {
-    const webhookUrl = 'DEINE_N8N_WEBHOOK_URL';
-    
-    console.log('Sende Webhook an:', webhookUrl);
+    const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
     
     try {
         const response = await fetch(webhookUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-API-KEY': password  // Passwort als Header-Auth
             },
             body: JSON.stringify({
                 password: password,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                // Weitere Daten, die du senden möchtest
             })
         });
         
         if (response.ok) {
             const result = await response.json();
-            console.log('Webhook erfolgreich:', result);
-            console.log('Resume URL:', result.resumeURL);
-            
-            // Resume URL speichern für späteren Aufruf
-            localStorage.setItem('resumeURL', result.resumeURL);
-            
+            console.log('Webhook erfolgreich gesendet:', result);
             handleSuccess(result);
         } else {
             console.error('Webhook-Fehler:', response.status);
-            handleError('Verbindungsfehler: ' + response.status);
+            handleError('Verbindungsfehler');
         }
     } catch (error) {
-        console.error('Fetch-Fehler:', error);
-        handleError('Netzwerkfehler: ' + error.message);
+        console.error('Fehler beim Webhook-Aufruf:', error);
+        handleError('Netzwerkfehler');
     }
 }
 
 // Erfolgreiche Antwort verarbeiten
 function handleSuccess(data) {
-    console.log('Success Handler aufgerufen mit:', data);
-    alert('Erfolgreich authentifiziert! Resume URL: ' + data.resumeURL);
-    
-    // Optional: Workflow später fortsetzen
-    // resumeWorkflow(data.resumeURL);
-}
-
-// Workflow fortsetzen (wenn benötigt)
-async function resumeWorkflow(resumeURL) {
-    try {
-        const response = await fetch(resumeURL, {
-            method: 'GET'  // oder POST, je nach deiner Konfiguration
-        });
-        
-        const result = await response.json();
-        console.log('Workflow fortgesetzt:', result);
-    } catch (error) {
-        console.error('Fehler beim Fortsetzen:', error);
-    }
+    // Hier kannst du die Antwort von n8n verarbeiten
+    alert('Erfolgreich authentifiziert!');
+    // Oder z.B. zu einer anderen Seite weiterleiten
+    // window.location.href = 'dashboard.html';
 }
 
 // Fehler behandeln
 function handleError(message) {
-    console.error('Error Handler aufgerufen:', message);
     alert('Fehler: ' + message);
 }
 
