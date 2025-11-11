@@ -534,7 +534,7 @@
         let studentsHistory = []; // Stack für Rückgängig-Funktion
         
 // Passwort (kann hier geändert werden)
-const correctPassword = 'lehrer2024';
+const correctPassword = '123';
 
 // Passwort prüfen
 function checkPassword() {
@@ -554,7 +554,7 @@ function checkPassword() {
 
 // Webhook an n8n senden
 async function sendWebhook(password) {
-    const webhookUrl = 'DEINE_N8N_WEBHOOK_URL';
+    const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
     
     try {
         const response = await fetch(webhookUrl, {
