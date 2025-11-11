@@ -586,11 +586,12 @@ async function sendWebhook(password) {
 
 // Erfolgreiche Antwort verarbeiten
 function handleSuccess(data) {
-    // Hier kannst du die Antwort von n8n verarbeiten
-    alert('Erfolgreich authentifiziert!');
-    // Oder z.B. zu einer anderen Seite weiterleiten
-    // window.location.href = 'dashboard.html';
+    console.log('Erfolgreich authentifiziert:', data);
+    // Direkt zur Tag-Auswahl wechseln
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('dayScreen').classList.remove('hidden');
 }
+
 
 // Fehler behandeln
 function handleError(message) {
