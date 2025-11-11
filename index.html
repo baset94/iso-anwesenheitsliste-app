@@ -532,7 +532,6 @@
         let selectedDay = '';
         let selectedClass = '';
         let studentsHistory = []; // Stack für Rückgängig-Funktion
-        let resumeURL = ''; // Speichert die resumeURL vom Webhook
         
         // Passwort (kann hier geändert werden)
         const correctPassword = 'lehrer2024';
@@ -569,10 +568,7 @@
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
-                    resumeURL = data.resumeURL || '';
                     console.log('Webhook erfolgreich aufgerufen');
-                    console.log('ResumeURL gespeichert:', resumeURL);
                     startApp();
                 } else {
                     console.error('Webhook-Fehler:', response.status);
@@ -602,6 +598,12 @@
                 ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
             ]
         };
+
+        // App starten - zur Tag-Auswahl
+        function startApp() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
 
         // Klassen für jeden Tag (als Reihen organisiert)
         function selectDay(day) {
@@ -633,12 +635,8 @@
         }
 
         // Klasse auswählen
-        async function selectClass(className) {
+        function selectClass(className) {
             selectedClass = className;
-            
-            // Klasse an n8n senden
-            await sendClassSelection(className);
-            
             document.getElementById('classScreen').classList.add('hidden');
             document.getElementById('mainScreen').style.display = 'block';
             document.getElementById('mainScreen').classList.remove('hidden');
@@ -646,36 +644,6 @@
             studentsHistory = []; // History zurücksetzen
             saveHistory(); // Initial-Zustand speichern
             renderStudents();
-        }
-        
-        // Klassenauswahl an n8n senden
-        async function sendClassSelection(className) {
-            if (!resumeURL) {
-                console.error('Keine resumeURL verfügbar');
-                return;
-            }
-            
-            const classValue = `${selectedDay} ${className}`;
-            
-            try {
-                const response = await fetch(resumeURL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        class: classValue
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log('Klassenauswahl erfolgreich gesendet:', classValue);
-                } else {
-                    console.error('Fehler beim Senden der Klassenauswahl:', response.status);
-                }
-            } catch (error) {
-                console.error('Fehler beim Senden der Klassenauswahl:', error);
-            }
         }
 
         // Zurück zur Startseite
