@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anwesenheits-App für Lehrer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #EFF6FF 0%, #E0E7FF 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Startseite */
+        .start-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .start-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 50px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .organization-title {
+            font-size: 22px;
+            color: #1F2937;
+            margin-bottom: 30px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .icon-large {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #1F2937;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #6B7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .password-input:focus {
+            border-color: #4F46E5;
+        }
+
+        .error-message {
+            color: #DC2626;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .btn-primary {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .class-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .class-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        /* Hauptansicht */
+        .main-screen {
+            display: none;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #1F2937;
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: #4F46E5;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-back:hover {
+            color: #4338CA;
+        }
+
+        .class-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .class-input:focus {
+            border-color: #4F46E5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card.total {
+            background: #F9FAFB;
+        }
+
+        .stat-card.present {
+            background: #ECFDF5;
+        }
+
+        .stat-card.absent {
+            background: #FEF2F2;
+        }
+
+        .stat-card.late {
+            background: #FFFBEB;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card.total .stat-number {
+            color: #1F2937;
+        }
+
+        .stat-card.present .stat-number {
+            color: #059669;
+        }
+
+        .stat-card.absent .stat-number {
+            color: #DC2626;
+        }
+
+        .stat-card.late .stat-number {
+            color: #D97706;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        /* Schülerliste */
+        .students-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #1F2937;
+            font-size: 16px;
+        }
+
+        .add-student-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .add-student-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .name-input {
+            padding: 10px 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .name-input:focus {
+            border-color: #4F46E5;
+        }
+
+        .btn-add {
+            padding: 10px 20px;
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+            background: #059669;
+        }
+
+        .btn-delete {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+            background: #FEE2E2;
+            color: #DC2626;
+            margin-left: 8px;
+        }
+
+        .btn-delete:hover {
+            background: #EF4444;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .btn-undo {
+            width: 100%;
+            background: #F59E0B;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-undo:hover {
+            background: #D97706;
+        }
+
+        .student-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-status {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+            background: #F3F4F6;
+        }
+
+        .btn-status:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-status.present {
+            background: #10B981;
+            color: white;
+        }
+
+        .btn-status.absent {
+            background: #EF4444;
+            color: white;
+        }
+
+        .btn-status.late {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .save-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 16px;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #4338CA;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .start-card {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Startseite -->
+    <div id="startScreen" class="start-screen">
+        <div class="start-card">
+            <div class="organization-title">Islamisches Sozialdienst- und Informationszentrum</div>
+            <div class="icon-large">👥</div>
+            <h1>Schüleranwesenheiten</h1>
+            <p class="subtitle">Lehrerinterne Software für die Ermittlung der Anwesenheiten der Schüler</p>
+            <input 
+                type="password" 
+                id="passwordInput" 
+                class="password-input" 
+                placeholder="Passwort eingeben"
+                onkeypress="if(event.key === 'Enter') checkPassword()"
+            >
+            <div id="errorMessage" class="error-message">Falsches Passwort. Bitte versuchen Sie es erneut.</div>
+            <button class="btn-primary" onclick="checkPassword()">App starten</button>
+        </div>
+    </div>
+
+    <!-- Tag-Auswahl -->
+    <div id="dayScreen" class="start-screen hidden">
+        <div class="start-card">
+            <h1>Unterrichtstag auswählen</h1>
+            <p class="subtitle">Wählen Sie den Tag für die Anwesenheitserfassung</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button class="btn-primary" onclick="selectDay('Samstag')">Samstag</button>
+                <button class="btn-primary" onclick="selectDay('Sonntag')">Sonntag</button>
+            </div>
+            <button class="btn-back" onclick="goBackToStart()" style="margin-top: 20px;">Zurück</button>
+        </div>
+    </div>
+
+    <!-- Klassen-Auswahl -->
+    <div id="classScreen" class="start-screen hidden">
+        <div class="start-card">
+            <h1>Klasse auswählen</h1>
+            <p class="subtitle" id="classSubtitle">Wählen Sie die Klasse für die Anwesenheitserfassung</p>
+            <div id="classButtons"></div>
+            <button class="btn-back" onclick="goBackToDay()" style="margin-top: 20px;">Zurück</button>
+        </div>
+    </div>
+
+    <!-- Hauptansicht -->
+    <div id="mainScreen" class="main-screen container hidden">
+        <div class="header-card">
+            <div class="header-top">
+                <h2 id="classTitle">Anwesenheitsliste</h2>
+                <button class="btn-back" onclick="goBack()">Zurück</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-number" id="statTotal">8</div>
+                    <div class="stat-label">Gesamt</div>
+                </div>
+                <div class="stat-card present">
+                    <div class="stat-number" id="statPresent">0</div>
+                    <div class="stat-label">Anwesend</div>
+                </div>
+                <div class="stat-card absent">
+                    <div class="stat-number" id="statAbsent">0</div>
+                    <div class="stat-label">Abwesend</div>
+                </div>
+                <div class="stat-card late">
+                    <div class="stat-number" id="statLate">0</div>
+                    <div class="stat-label">Verspätet</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="add-student-card">
+            <div class="add-student-title">Neuen Schüler hinzufügen</div>
+            <div class="input-row">
+                <input type="text" id="firstNameInput" class="name-input" placeholder="Vorname">
+                <input type="text" id="lastNameInput" class="name-input" placeholder="Nachname">
+                <button class="btn-add" onclick="addStudent()">Hinzufügen</button>
+            </div>
+        </div>
+
+        <div class="students-list" id="studentsList"></div>
+
+        <div class="save-card">
+            <button class="btn-undo" onclick="undoChanges()" id="undoBtn" style="display: none;">Änderungen rückgängig machen</button>
+            <button class="btn-save" onclick="saveAttendance()">Anwesenheit speichern</button>
+        </div>
+    </div>
+
+    <script>
+        // Passwort-Prüfung
+        const CORRECT_PASSWORD = "123";
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (input.value === CORRECT_PASSWORD) {
+                errorMessage.style.display = 'none';
+                input.value = ''; // Passwortfeld leeren
+                startApp();
+            } else {
+                errorMessage.style.display = 'block';
+                input.value = ''; // Passwortfeld leeren
+                input.focus();
+            }
+        }
+
+        // Schülerdaten
+        const students = [
+            { id: 1, name: 'Anna Müller', status: null },
+            { id: 2, name: 'Ben Schmidt', status: null },
+            { id: 3, name: 'Clara Wagner', status: null },
+            { id: 4, name: 'David Fischer', status: null },
+            { id: 5, name: 'Emma Bauer', status: null },
+            { id: 6, name: 'Felix Weber', status: null },
+            { id: 7, name: 'Greta Koch', status: null },
+            { id: 8, name: 'Hannah Meyer', status: null }
+        ];
+
+        let selectedDay = '';
+        let selectedClass = '';
+        let studentsHistory = []; // Stack für Rückgängig-Funktion
+        
+        const classesPerDay = {
+            'Samstag': [
+                ['Klasse 1', 'Klasse 2'],
+                ['Klasse 3 Quran', 'Klasse 3 Deen'],
+                ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
+            ],
+            'Sonntag': [
+                ['Vorschule'],
+                ['Klasse 1', 'Klasse 2'],
+                ['Klasse 3 Quran', 'Klasse 3 Deen'],
+                ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
+            ]
+        };
+
+        // App starten - zur Tag-Auswahl
+        function startApp() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
+
+        // Tag auswählen
+        function selectDay(day) {
+            selectedDay = day;
+            document.getElementById('dayScreen').classList.add('hidden');
+            
+            // Klassen-Buttons erstellen
+            const classButtons = document.getElementById('classButtons');
+            classButtons.innerHTML = '';
+            
+            const classRows = classesPerDay[day];
+            classRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
+                
+                row.forEach(className => {
+                    const button = document.createElement('button');
+                    button.className = 'btn-primary';
+                    button.textContent = className;
+                    button.onclick = () => selectClass(className);
+                    rowDiv.appendChild(button);
+                });
+                
+                classButtons.appendChild(rowDiv);
+            });
+            
+            document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
+            document.getElementById('classScreen').classList.remove('hidden');
+        }
+
+        // Klasse auswählen
+        function selectClass(className) {
+            selectedClass = className;
+            document.getElementById('classScreen').classList.add('hidden');
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('mainScreen').classList.remove('hidden');
+            document.getElementById('classTitle').textContent = className;
+            studentsHistory = []; // History zurücksetzen
+            saveHistory(); // Initial-Zustand speichern
+            renderStudents();
+        }
+
+        // Zurück zur Startseite
+        function goBackToStart() {
+            document.getElementById('dayScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Zurück zur Tag-Auswahl
+        function goBackToDay() {
+            document.getElementById('classScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
+
+        // Zurück zur Klassen-Auswahl
+        function goBack() {
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('classScreen').classList.remove('hidden');
+            resetAttendance();
+        }
+
+        // History speichern
+        function saveHistory() {
+            // Aktuellen Zustand im History-Stack speichern
+            studentsHistory.push(JSON.parse(JSON.stringify(students)));
+            // Maximal 50 Schritte speichern
+            if (studentsHistory.length > 50) {
+                studentsHistory.shift();
+            }
+            checkUndoButton();
+        }
+
+        // Prüfen ob Undo-Button angezeigt werden soll
+        function checkUndoButton() {
+            // Button anzeigen wenn mehr als ein Zustand gespeichert ist
+            document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
+        }
+
+        // Änderungen rückgängig machen
+        function undoChanges() {
+            if (studentsHistory.length <= 1) {
+                return; // Nichts zum Rückgängig machen
+            }
+            
+            // Aktuellen Zustand entfernen
+            studentsHistory.pop();
+            
+            // Vorherigen Zustand wiederherstellen
+            const previousState = studentsHistory[studentsHistory.length - 1];
+            students.length = 0;
+            students.push(...JSON.parse(JSON.stringify(previousState)));
+            
+            renderStudents();
+        }
+
+        // Anwesenheit zurücksetzen
+        function resetAttendance() {
+            students.forEach(student => student.status = null);
+            renderStudents();
+        }
+
+        // Schüler rendern
+        function renderStudents() {
+            const list = document.getElementById('studentsList');
+            list.innerHTML = '';
+
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                
+                card.innerHTML = `
+                    <div class="student-name">${student.name}</div>
+                    <div class="student-actions">
+                        <div class="status-buttons">
+                            <button 
+                                class="btn-status ${student.status === 'present' ? 'present' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'present')"
+                            >✓</button>
+                            <button 
+                                class="btn-status ${student.status === 'late' ? 'late' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'late')"
+                            >🕐</button>
+                            <button 
+                                class="btn-status ${student.status === 'absent' ? 'absent' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'absent')"
+                            >✕</button>
+                        </div>
+                        <button 
+                            class="btn-delete" 
+                            onclick="deleteStudent(${student.id})"
+                            title="Schüler entfernen"
+                        >🗑️</button>
+                    </div>
+                `;
+                
+                list.appendChild(card);
+            });
+
+            updateStats();
+            checkUndoButton();
+        }
+
+        // Status umschalten
+        function toggleStatus(id, status) {
+            saveHistory(); // Zustand vor Änderung speichern
+            const student = students.find(s => s.id === id);
+            if (student) {
+                student.status = student.status === status ? null : status;
+                renderStudents();
+            }
+        }
+
+        // Statistiken aktualisieren
+        function updateStats() {
+            const present = students.filter(s => s.status === 'present').length;
+            const absent = students.filter(s => s.status === 'absent').length;
+            const late = students.filter(s => s.status === 'late').length;
+
+            document.getElementById('statTotal').textContent = students.length;
+            document.getElementById('statPresent').textContent = present;
+            document.getElementById('statAbsent').textContent = absent;
+            document.getElementById('statLate').textContent = late;
+        }
+
+        // Neuen Schüler hinzufügen
+        function addStudent() {
+            const firstName = document.getElementById('firstNameInput').value.trim();
+            const lastName = document.getElementById('lastNameInput').value.trim();
+
+            if (!firstName || !lastName) {
+                alert('Bitte geben Sie Vor- und Nachname ein.');
+                return;
+            }
+
+            saveHistory(); // Zustand vor Änderung speichern
+
+            const newStudent = {
+                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
+                name: `${firstName} ${lastName}`,
+                status: null
+            };
+
+            students.push(newStudent);
+            
+            // Eingabefelder leeren
+            document.getElementById('firstNameInput').value = '';
+            document.getElementById('lastNameInput').value = '';
+
+            renderStudents();
+        }
+
+        // Schüler löschen
+        function deleteStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
+                saveHistory(); // Zustand vor Änderung speichern
+                const index = students.findIndex(s => s.id === id);
+                if (index > -1) {
+                    students.splice(index, 1);
+                    renderStudents();
+                }
+            }
+        }
+
+        // Anwesenheit speichern
+        function saveAttendance() {
+            if (students.length === 0) {
+                alert('Es sind keine Schüler in der Liste.');
+                return;
+            }
+
+            const data = {
+                day: selectedDay,
+                class: selectedClass,
+                date: new Date().toLocaleDateString('de-DE'),
+                time: new Date().toLocaleTimeString('de-DE'),
+                students: students
+            };
+
+            console.log('Gespeicherte Anwesenheit:', data);
+            alert(`Anwesenheit für ${selectedDay} - ${selectedClass} wurde erfolgreich gespeichert!`);
+        }
+    </script>
+</body>
+</html>
