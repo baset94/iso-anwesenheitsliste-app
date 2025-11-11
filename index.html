@@ -614,52 +614,93 @@ function handleError(message) {
 async function selectClass(className) {
     selectedClass = className;
     
-    // Klassenauswahl an n8n senden um Wait Node fortzusetzen
-    await sendClassSelection(className);
+    console.log('=== Klassenauswahl gestartet ===');
+    console.log('Gewählte Klasse:', className);
+    console.log('Gewählter Tag:', selectedDay);
     
-    // Zur Hauptansicht wechseln
-    document.getElementById('classScreen').classList.add('hidden');
-    document.getElementById('mainScreen').style.display = 'block';
-    document.getElementById('mainScreen').classList.remove('hidden');
-    document.getElementById('classTitle').textContent = className;
-    studentsHistory = [];
-    saveHistory();
-    renderStudents();
+    // WICHTIG: Erst Daten senden, dann UI aktualisieren
+    const success = await sendClassSelection(className);
+    
+    if (success) {
+        // Nur zur Hauptansicht wechseln wenn erfolgreich gesendet
+        document.getElementById('classScreen').classList.add('hidden');
+        document.getElementById('mainScreen').style.display = 'block';
+        document.getElementById('mainScreen').classList.remove('hidden');
+        document.getElementById('classTitle').textContent = className;
+        studentsHistory = [];
+        saveHistory();
+        renderStudents();
+    } else {
+        alert('Fehler beim Senden der Klassenauswahl. Bitte versuchen Sie es erneut.');
+    }
 }
 
 // Klassenauswahl an n8n Resume URL senden
 async function sendClassSelection(className) {
+    console.log('=== START: Klassenauswahl senden ===');
+    console.log('Resume URL:', resumeUrl);
+    
     if (!resumeUrl) {
-        console.error('Keine Resume-URL vorhanden');
-        return;
+        console.error('❌ Keine Resume-URL vorhanden!');
+        alert('Fehler: Keine Verbindung zu n8n. Bitte starten Sie die App neu.');
+        return false;
     }
+    
+    const payload = {
+        selectedDay: selectedDay,
+        selectedClass: className,
+        timestamp: new Date().toISOString(),
+        action: 'classSelected'
+    };
+    
+    console.log('📦 Payload:', JSON.stringify(payload, null, 2));
+    console.log('🔗 Sende an:', resumeUrl);
     
     try {
         const response = await fetch(resumeUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                selectedDay: selectedDay,
-                selectedClass: className,
-                timestamp: new Date().toISOString(),
-                action: 'classSelected'
-            })
+            body: JSON.stringify(payload)
         });
         
+        console.log('📨 Response Status:', response.status);
+        console.log('📨 Response Status Text:', response.statusText);
+        
         if (response.ok) {
-            const result = await response.json();
-            console.log('Klassenauswahl erfolgreich gesendet:', result);
+            const contentType = response.headers.get('content-type');
+            console.log('📄 Content-Type:', contentType);
+            
+            // Versuche JSON zu parsen, wenn vorhanden
+            if (contentType && contentType.includes('application/json')) {
+                const result = await response.json();
+                console.log('✅ Response Data:', result);
+            } else {
+                const text = await response.text();
+                console.log('✅ Response Text:', text);
+            }
+            
+            console.log('✅ Klassenauswahl erfolgreich gesendet!');
+            return true;
+            
         } else {
-            console.error('Fehler beim Senden der Klassenauswahl:', response.status);
+            const errorText = await response.text();
+            console.error('❌ HTTP Fehler:', response.status, response.statusText);
+            console.error('❌ Error Body:', errorText);
+            return false;
         }
+        
     } catch (error) {
-        console.error('Fehler beim Senden der Klassenauswahl:', error);
+        console.error('❌ Fetch Fehler:', error);
+        console.error('❌ Error Name:', error.name);
+        console.error('❌ Error Message:', error.message);
+        return false;
+    } finally {
+        console.log('=== ENDE: Klassenauswahl senden ===');
     }
 }
-
-
 
         // App starten - zur Tag-Auswahl
         function startApp() {
