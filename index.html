@@ -606,6 +606,70 @@ function handleError(message) {
     document.getElementById('passwordInput').value = '';
     document.getElementById('passwordInput').focus();
 } 
+
+// Funktion zum Auswählen der Klasse und Senden an n8n
+async function selectClass(className) {
+    selectedClass = className;
+    
+    if (!resumeUrl) {
+        console.error('Keine resumeUrl vorhanden!');
+        alert('Fehler: Keine Verbindung zu n8n');
+        return;
+    }
+    
+    const data = {
+        day: selectedDay,
+        class: selectedClass,
+        timestamp: new Date().toISOString()
+    };
+    
+    try {
+        // Loading-Zustand anzeigen (optional)
+        showLoading();
+        
+        const response = await fetch(resumeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Klasse erfolgreich übermittelt:', result);
+            
+            // Hier kannst du zum nächsten Screen wechseln
+            // z.B. Schüler-Anwesenheit erfassen
+            hideLoading();
+            proceedToNextStep();
+        } else {
+            console.error('Fehler beim Senden:', response.status);
+            hideLoading();
+            alert('Fehler beim Übermitteln der Daten');
+        }
+    } catch (error) {
+        console.error('Netzwerkfehler:', error);
+        hideLoading();
+        alert('Netzwerkfehler - bitte erneut versuchen');
+    }
+}
+
+// Hilfsfunktionen (optional)
+function showLoading() {
+    // Zeige einen Lade-Indikator
+    document.getElementById('loadingIndicator')?.classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loadingIndicator')?.classList.add('hidden');
+}
+
+function proceedToNextStep() {
+    // Zum nächsten Screen wechseln
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('studentScreen').classList.remove('hidden');
+}
         
         // App starten - zur Tag-Auswahl
         function startApp() {
