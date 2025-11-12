@@ -639,17 +639,65 @@
             document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
             document.getElementById('classScreen').classList.remove('hidden');
         }
+// ============================================
+// Navigation zwischen Screens
+// ============================================
+async function selectClass(className) {
+    selectedClass = className;
+    
+    // JSON-Daten mit vollständiger Klassenstruktur senden
+    await sendClassSelection(selectedDay, className);
+    
+    // Navigation zur Hauptansicht
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('classTitle').textContent = className;
+    studentsHistory = [];
+    saveHistory();
+    renderStudents();
+}
 
-        function selectClass(className) {
-            selectedClass = className;
-            document.getElementById('classScreen').classList.add('hidden');
-            document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('mainScreen').classList.remove('hidden');
-            document.getElementById('classTitle').textContent = className;
-            studentsHistory = [];
-            saveHistory();
-            renderStudents();
+// Klassenauswahl mit vollständiger Struktur an n8n resumeUrl senden
+async function sendClassSelection(day, className) {
+    if (!resumeUrl) {
+        console.error('Keine resumeUrl verfügbar');
+        return;
+    }
+    
+    const classData = {
+        selectedWeekday: day,
+        selectedClass: className,
+        allClassesForDay: classesPerDay[day],
+        allClasses: classesPerDay,
+        timestamp: new Date().toISOString(),
+        action: 'class_selected'
+    };
+    
+    try {
+        const response = await fetch(resumeUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(classData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Klassenauswahl erfolgreich gesendet:', result);
+            
+            // Falls n8n eine neue resumeUrl zurückgibt, aktualisieren
+            if (result.resumeUrl) {
+                resumeUrl = result.resumeUrl;
+            }
+        } else {
+            console.error('Fehler beim Senden der Klassenauswahl:', response.status);
         }
+    } catch (error) {
+        console.error('Netzwerkfehler beim Senden der Klassenauswahl:', error);
+    }
+}
 
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
