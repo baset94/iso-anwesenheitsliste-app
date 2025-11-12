@@ -23,7 +23,11 @@
             margin: 0 auto;
         }
 
-        /* Startseite */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Gemeinsame Komponenten */
         .start-screen {
             display: flex;
             align-items: center;
@@ -60,6 +64,11 @@
             margin-bottom: 20px;
         }
 
+        h2 {
+            font-size: 24px;
+            color: #1F2937;
+        }
+
         .subtitle {
             color: #6B7280;
             margin-bottom: 30px;
@@ -67,28 +76,7 @@
             line-height: 1.6;
         }
 
-        .password-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .password-input:focus {
-            border-color: #4F46E5;
-        }
-
-        .error-message {
-            color: #DC2626;
-            font-size: 14px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
+        /* Buttons */
         .btn-primary {
             background: #4F46E5;
             color: white;
@@ -109,42 +97,6 @@
             transform: translateY(-1px);
         }
 
-        .class-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .class-row.single {
-            grid-template-columns: 1fr;
-        }
-
-        /* Hauptansicht */
-        .main-screen {
-            display: none;
-        }
-
-        .header-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 24px;
-            color: #1F2937;
-        }
-
         .btn-back {
             background: none;
             border: none;
@@ -152,139 +104,11 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 20px;
         }
 
         .btn-back:hover {
             color: #4338CA;
-        }
-
-        .class-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E5E7EB;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .class-input:focus {
-            border-color: #4F46E5;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .stat-card {
-            padding: 16px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-card.total {
-            background: #F9FAFB;
-        }
-
-        .stat-card.present {
-            background: #ECFDF5;
-        }
-
-        .stat-card.absent {
-            background: #FEF2F2;
-        }
-
-        .stat-card.late {
-            background: #FFFBEB;
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .stat-card.total .stat-number {
-            color: #1F2937;
-        }
-
-        .stat-card.present .stat-number {
-            color: #059669;
-        }
-
-        .stat-card.absent .stat-number {
-            color: #DC2626;
-        }
-
-        .stat-card.late .stat-number {
-            color: #D97706;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #6B7280;
-        }
-
-        /* Schülerliste */
-        .students-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .student-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .student-name {
-            font-weight: 500;
-            color: #1F2937;
-            font-size: 16px;
-        }
-
-        .add-student-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .add-student-title {
-            font-weight: 600;
-            color: #1F2937;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-
-        .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .name-input {
-            padding: 10px 12px;
-            border: 2px solid #E5E7EB;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .name-input:focus {
-            border-color: #4F46E5;
         }
 
         .btn-add {
@@ -342,14 +166,21 @@
             background: #D97706;
         }
 
-        .student-actions {
-            display: flex;
-            align-items: center;
+        .btn-save {
+            width: 100%;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .status-buttons {
-            display: flex;
-            gap: 8px;
+        .btn-save:hover {
+            background: #4338CA;
         }
 
         .btn-status {
@@ -385,6 +216,187 @@
             color: white;
         }
 
+        /* Inputs */
+        .password-input,
+        .class-input,
+        .name-input {
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .password-input,
+        .class-input {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            font-size: 14px;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+
+        .password-input:focus,
+        .class-input:focus,
+        .name-input:focus {
+            border-color: #4F46E5;
+        }
+
+        .error-message {
+            color: #DC2626;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Klassen-Reihen */
+        .class-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .class-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        /* Hauptansicht */
+        .main-screen {
+            display: none;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Statistiken */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card.total {
+            background: #F9FAFB;
+        }
+
+        .stat-card.present {
+            background: #ECFDF5;
+        }
+
+        .stat-card.absent {
+            background: #FEF2F2;
+        }
+
+        .stat-card.late {
+            background: #FFFBEB;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card.total .stat-number {
+            color: #1F2937;
+        }
+
+        .stat-card.present .stat-number {
+            color: #059669;
+        }
+
+        .stat-card.absent .stat-number {
+            color: #DC2626;
+        }
+
+        .stat-card.late .stat-number {
+            color: #D97706;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        /* Schüler-Karten */
+        .add-student-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .add-student-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .students-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: #1F2937;
+            font-size: 16px;
+        }
+
+        .student-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
         .save-card {
             background: white;
             border-radius: 12px;
@@ -392,27 +404,7 @@
             padding: 16px;
         }
 
-        .btn-save {
-            width: 100%;
-            background: #4F46E5;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-save:hover {
-            background: #4338CA;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
+        /* Responsive Design */
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -429,7 +421,7 @@
     </style>
 </head>
 <body>
-    <!-- Startseite -->
+    <!-- Startseite - Passwort -->
     <div id="startScreen" class="start-screen">
         <div class="start-card">
             <div class="organization-title">Islamisches Sozialdienst- und Informationszentrum</div>
@@ -457,7 +449,7 @@
                 <button class="btn-primary" onclick="selectDay('Samstag')">Samstag</button>
                 <button class="btn-primary" onclick="selectDay('Sonntag')">Sonntag</button>
             </div>
-            <button class="btn-back" onclick="goBackToStart()" style="margin-top: 20px;">Zurück</button>
+            <button class="btn-back" onclick="goBackToStart()">Zurück</button>
         </div>
     </div>
 
@@ -467,11 +459,11 @@
             <h1>Klasse auswählen</h1>
             <p class="subtitle" id="classSubtitle">Wählen Sie die Klasse für die Anwesenheitserfassung</p>
             <div id="classButtons"></div>
-            <button class="btn-back" onclick="goBackToDay()" style="margin-top: 20px;">Zurück</button>
+            <button class="btn-back" onclick="goBackToDay()">Zurück</button>
         </div>
     </div>
 
-    <!-- Hauptansicht -->
+    <!-- Hauptansicht - Anwesenheitsliste -->
     <div id="mainScreen" class="main-screen container hidden">
         <div class="header-card">
             <div class="header-top">
@@ -517,101 +509,17 @@
     </div>
 
     <script>
-        // Schülerdaten
-        const students = [
-            { id: 1, name: 'Anna Müller', status: null },
-            { id: 2, name: 'Ben Schmidt', status: null },
-            { id: 3, name: 'Clara Wagner', status: null },
-            { id: 4, name: 'David Fischer', status: null },
-            { id: 5, name: 'Emma Bauer', status: null },
-            { id: 6, name: 'Felix Weber', status: null },
-            { id: 7, name: 'Greta Koch', status: null },
-            { id: 8, name: 'Hannah Meyer', status: null }
-        ];
-
+        // ============================================
+        // Globale Variablen und Konfiguration
+        // ============================================
+        const correctPassword = '123';
+        const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
+        
         let selectedDay = '';
         let selectedClass = '';
-        let studentsHistory = []; // Stack für Rückgängig-Funktion
-        let resumeUrl = ''; // Globale Variable für die Resume-URL
+        let resumeUrl = '';
+        let studentsHistory = [];
 
-        
-// Passwort (kann hier geändert werden)
-const correctPassword = '123';
-
-// Passwort prüfen
-function checkPassword() {
-    const password = document.getElementById('passwordInput').value;
-    const errorMsg = document.getElementById('errorMessage');
-    
-    if (password === correctPassword) {
-        errorMsg.style.display = 'none';
-        document.getElementById('passwordInput').value = '';
-        sendWebhook(password);
-    } else {
-        errorMsg.style.display = 'block';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').focus();
-    }
-}
-
-// Webhook an n8n senden (Initial)
-async function sendWebhook(password) {
-    const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
-    
-    try {
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': password
-            },
-            body: JSON.stringify({
-                password: password,
-                timestamp: new Date().toISOString(),
-                action: 'login'
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            console.log('Webhook erfolgreich gesendet:', result);
-            
-            // resumeUrl von n8n speichern
-            if (result.resumeUrl) {
-                resumeUrl = result.resumeUrl;
-            }
-            
-            handleSuccess(result);
-        } else {
-            console.error('Webhook-Fehler:', response.status);
-            handleError('Verbindungsfehler');
-        }
-    } catch (error) {
-        console.error('Fehler beim Webhook-Aufruf:', error);
-        handleError('Netzwerkfehler');
-    }
-}
-
-// Beispiel wenn n8n eine executionId zurückgibt
-function handleSuccess(data) {
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('dayScreen').classList.remove('hidden');
-}
-
-// Fehler behandeln
-function handleError(message) {
-    const errorMsg = document.getElementById('errorMessage');
-    errorMsg.textContent = message;
-    errorMsg.style.display = 'block';
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('passwordInput').focus();
-}
-
-        // App starten - zur Tag-Auswahl
-        function startApp() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('dayScreen').classList.remove('hidden');
-        }
         const classesPerDay = {
             'Samstag': [
                 ['Klasse 1', 'Klasse 2'],
@@ -626,18 +534,89 @@ function handleError(message) {
             ]
         };
 
-        // App starten - zur Tag-Auswahl
-        function startApp() {
+        const students = [
+            { id: 1, name: 'Anna Müller', status: null },
+            { id: 2, name: 'Ben Schmidt', status: null },
+            { id: 3, name: 'Clara Wagner', status: null },
+            { id: 4, name: 'David Fischer', status: null },
+            { id: 5, name: 'Emma Bauer', status: null },
+            { id: 6, name: 'Felix Weber', status: null },
+            { id: 7, name: 'Greta Koch', status: null },
+            { id: 8, name: 'Hannah Meyer', status: null }
+        ];
+
+        // ============================================
+        // Authentifizierung & Webhook
+        // ============================================
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (password === correctPassword) {
+                errorMsg.style.display = 'none';
+                document.getElementById('passwordInput').value = '';
+                sendWebhook(password);
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        async function sendWebhook(password) {
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': password
+                    },
+                    body: JSON.stringify({
+                        password: password,
+                        timestamp: new Date().toISOString(),
+                        action: 'login'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Webhook erfolgreich gesendet:', result);
+                    
+                    if (result.resumeUrl) {
+                        resumeUrl = result.resumeUrl;
+                    }
+                    
+                    handleSuccess();
+                } else {
+                    console.error('Webhook-Fehler:', response.status);
+                    handleError('Verbindungsfehler');
+                }
+            } catch (error) {
+                console.error('Fehler beim Webhook-Aufruf:', error);
+                handleError('Netzwerkfehler');
+            }
+        }
+
+        function handleSuccess() {
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('dayScreen').classList.remove('hidden');
         }
 
-        // Klassen für jeden Tag (als Reihen organisiert)
+        function handleError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+
+        // ============================================
+        // Navigation zwischen Screens
+        // ============================================
         function selectDay(day) {
             selectedDay = day;
             document.getElementById('dayScreen').classList.add('hidden');
             
-            // Klassen-Buttons erstellen
             const classButtons = document.getElementById('classButtons');
             classButtons.innerHTML = '';
             
@@ -661,80 +640,37 @@ function handleError(message) {
             document.getElementById('classScreen').classList.remove('hidden');
         }
 
-        // Klasse auswählen
         function selectClass(className) {
             selectedClass = className;
             document.getElementById('classScreen').classList.add('hidden');
             document.getElementById('mainScreen').style.display = 'block';
             document.getElementById('mainScreen').classList.remove('hidden');
             document.getElementById('classTitle').textContent = className;
-            studentsHistory = []; // History zurücksetzen
-            saveHistory(); // Initial-Zustand speichern
+            studentsHistory = [];
+            saveHistory();
             renderStudents();
         }
 
-        // Zurück zur Startseite
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
             document.getElementById('startScreen').classList.remove('hidden');
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Zurück zur Tag-Auswahl
         function goBackToDay() {
             document.getElementById('classScreen').classList.add('hidden');
             document.getElementById('dayScreen').classList.remove('hidden');
         }
 
-        // Zurück zur Klassen-Auswahl
         function goBack() {
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('classScreen').classList.remove('hidden');
             resetAttendance();
         }
 
-        // History speichern
-        function saveHistory() {
-            // Aktuellen Zustand im History-Stack speichern
-            studentsHistory.push(JSON.parse(JSON.stringify(students)));
-            // Maximal 50 Schritte speichern
-            if (studentsHistory.length > 50) {
-                studentsHistory.shift();
-            }
-            checkUndoButton();
-        }
-
-        // Prüfen ob Undo-Button angezeigt werden soll
-        function checkUndoButton() {
-            // Button anzeigen wenn mehr als ein Zustand gespeichert ist
-            document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
-        }
-
-        // Änderungen rückgängig machen
-        function undoChanges() {
-            if (studentsHistory.length <= 1) {
-                return; // Nichts zum Rückgängig machen
-            }
-            
-            // Aktuellen Zustand entfernen
-            studentsHistory.pop();
-            
-            // Vorherigen Zustand wiederherstellen
-            const previousState = studentsHistory[studentsHistory.length - 1];
-            students.length = 0;
-            students.push(...JSON.parse(JSON.stringify(previousState)));
-            
-            renderStudents();
-        }
-
-        // Anwesenheit zurücksetzen
-        function resetAttendance() {
-            students.forEach(student => student.status = null);
-            document.getElementById('classInput').value = '';
-            renderStudents();
-        }
-
-        // Schüler rendern
+        // ============================================
+        // Schüler-Verwaltung
+        // ============================================
         function renderStudents() {
             const list = document.getElementById('studentsList');
             list.innerHTML = '';
@@ -775,9 +711,47 @@ function handleError(message) {
             checkUndoButton();
         }
 
-        // Status umschalten
+        function addStudent() {
+            const firstName = document.getElementById('firstNameInput').value.trim();
+            const lastName = document.getElementById('lastNameInput').value.trim();
+
+            if (!firstName || !lastName) {
+                alert('Bitte geben Sie Vor- und Nachname ein.');
+                return;
+            }
+
+            saveHistory();
+
+            const newStudent = {
+                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
+                name: `${firstName} ${lastName}`,
+                status: null
+            };
+
+            students.push(newStudent);
+            
+            document.getElementById('firstNameInput').value = '';
+            document.getElementById('lastNameInput').value = '';
+
+            renderStudents();
+        }
+
+        function deleteStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
+                saveHistory();
+                const index = students.findIndex(s => s.id === id);
+                if (index > -1) {
+                    students.splice(index, 1);
+                    renderStudents();
+                }
+            }
+        }
+
         function toggleStatus(id, status) {
-            saveHistory(); // Zustand vor Änderung speichern
+            saveHistory();
             const student = students.find(s => s.id === id);
             if (student) {
                 student.status = student.status === status ? null : status;
@@ -785,7 +759,9 @@ function handleError(message) {
             }
         }
 
-        // Statistiken aktualisieren
+        // ============================================
+        // Statistiken & Status
+        // ============================================
         function updateStats() {
             const present = students.filter(s => s.status === 'present').length;
             const absent = students.filter(s => s.status === 'absent').length;
@@ -797,49 +773,40 @@ function handleError(message) {
             document.getElementById('statLate').textContent = late;
         }
 
-        // Neuen Schüler hinzufügen
-        function addStudent() {
-            const firstName = document.getElementById('firstNameInput').value.trim();
-            const lastName = document.getElementById('lastNameInput').value.trim();
-
-            if (!firstName || !lastName) {
-                alert('Bitte geben Sie Vor- und Nachname ein.');
-                return;
-            }
-
-            saveHistory(); // Zustand vor Änderung speichern
-
-            const newStudent = {
-                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
-                name: `${firstName} ${lastName}`,
-                status: null
-            };
-
-            students.push(newStudent);
-            
-            // Eingabefelder leeren
-            document.getElementById('firstNameInput').value = '';
-            document.getElementById('lastNameInput').value = '';
-
+        function resetAttendance() {
+            students.forEach(student => student.status = null);
             renderStudents();
         }
 
-        // Schüler löschen
-        function deleteStudent(id) {
-            const student = students.find(s => s.id === id);
-            if (!student) return;
-
-            if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
-                saveHistory(); // Zustand vor Änderung speichern
-                const index = students.findIndex(s => s.id === id);
-                if (index > -1) {
-                    students.splice(index, 1);
-                    renderStudents();
-                }
+        // ============================================
+        // History & Undo-Funktionalität
+        // ============================================
+        function saveHistory() {
+            studentsHistory.push(JSON.parse(JSON.stringify(students)));
+            if (studentsHistory.length > 50) {
+                studentsHistory.shift();
             }
+            checkUndoButton();
         }
 
-        // Anwesenheit speichern
+        function checkUndoButton() {
+            document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
+        }
+
+        function undoChanges() {
+            if (studentsHistory.length <= 1) return;
+            
+            studentsHistory.pop();
+            const previousState = studentsHistory[studentsHistory.length - 1];
+            students.length = 0;
+            students.push(...JSON.parse(JSON.stringify(previousState)));
+            
+            renderStudents();
+        }
+
+        // ============================================
+        // Speichern & Export
+        // ============================================
         function saveAttendance() {
             if (students.length === 0) {
                 alert('Es sind keine Schüler in der Liste.');
