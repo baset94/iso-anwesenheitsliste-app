@@ -534,6 +534,7 @@
         let studentsHistory = []; // Stack für Rückgängig-Funktion
         let resumeUrl = ''; // Globale Variable für die Resume-URL
 
+        
 // Passwort (kann hier geändert werden)
 const correctPassword = '123';
 
@@ -670,38 +671,6 @@ function handleError(message) {
             studentsHistory = []; // History zurücksetzen
             saveHistory(); // Initial-Zustand speichern
             renderStudents();
-
-            // NEU: Auswahl an Wait-Node senden
-            postSelectionToWait(selectedDay, className);
-        }
-
-        // NEU: Auswahl (Wochentag + Klasse) an Wait-Resume-URL senden
-        async function postSelectionToWait(day, className) {
-          if (!resumeUrl) {
-            console.warn('resumeUrl fehlt – Login/erster Webhook muss vorher erfolgreich sein.');
-            return;
-          }
-          // Optional: UI-Disable/Spinner setzen
-          try {
-            const res = await fetch(resumeUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-                // Falls du Auth für den Resume-Webhook am Wait-Node aktivierst, hier z.B.:
-                // 'X-RESUME-TOKEN': 'dein-token'
-              },
-              body: JSON.stringify({
-                day,
-                class: className,
-                label: `${day} ${className}`,
-                timestamp: new Date().toISOString()
-              })
-            });
-            // Optional: Antwort lesen, wenn dein Flow über einen Respond to Webhook hinter dem Wait antwortet
-            // const data = await res.json();
-          } catch (e) {
-            console.error('Resume-Aufruf fehlgeschlagen:', e);
-          }
         }
 
         // Zurück zur Startseite
