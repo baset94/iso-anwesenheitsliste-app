@@ -606,7 +606,59 @@ function handleError(message) {
     document.getElementById('passwordInput').value = '';
     document.getElementById('passwordInput').focus();
 } 
-        
+
+<script>
+async function postToResume(payload) {
+  if (!resumeUrl) {
+    alert('Resume-URL fehlt. Bitte App neu starten.');
+    return false;
+  }
+  try {
+    const res = await fetch(resumeUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // n8n kann hier optional mit Respond-to-Webhook antworten
+    if (!res.ok) {
+      console.error('Resume-POST fehlgeschlagen:', res.status);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('Netzwerkfehler beim Resume-POST:', e);
+    return false;
+  }
+}
+
+// Klasse auswählen: sendet Auswahl direkt an n8n WAIT (resumeUrl)
+async function selectClass(className) {
+  selectedClass = className;
+
+  const payload = {
+    day: selectedDay,
+    class: selectedClass,
+    label: `${selectedDay} ${selectedClass}`,
+    timestamp: new Date().toISOString(),
+    action: 'selectClass'
+  };
+
+  const ok = await postToResume(payload);
+  if (!ok) {
+    alert('Übermittlung an n8n fehlgeschlagen. Bitte erneut versuchen.');
+    return;
+  }
+
+  // UI erst nach erfolgreichem POST fortsetzen
+  document.getElementById('classScreen').classList.add('hidden');
+  document.getElementById('mainScreen').style.display = 'block';
+  document.getElementById('mainScreen').classList.remove('hidden');
+  document.getElementById('classTitle').textContent = className;
+  studentsHistory = [];
+  saveHistory();
+  renderStudents();
+}
+
         // App starten - zur Tag-Auswahl
         function startApp() {
             document.getElementById('startScreen').classList.add('hidden');
