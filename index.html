@@ -517,335 +517,346 @@
     </div>
 
     <script>
-    // Schülerdaten
-    const students = [
-        { id: 1, name: 'Anna Müller', status: null },
-        { id: 2, name: 'Ben Schmidt', status: null },
-        { id: 3, name: 'Clara Wagner', status: null },
-        { id: 4, name: 'David Fischer', status: null },
-        { id: 5, name: 'Emma Bauer', status: null },
-        { id: 6, name: 'Felix Weber', status: null },
-        { id: 7, name: 'Greta Koch', status: null },
-        { id: 8, name: 'Hannah Meyer', status: null }
-    ];
+        // Schülerdaten
+        const students = [
+            { id: 1, name: 'Anna Müller', status: null },
+            { id: 2, name: 'Ben Schmidt', status: null },
+            { id: 3, name: 'Clara Wagner', status: null },
+            { id: 4, name: 'David Fischer', status: null },
+            { id: 5, name: 'Emma Bauer', status: null },
+            { id: 6, name: 'Felix Weber', status: null },
+            { id: 7, name: 'Greta Koch', status: null },
+            { id: 8, name: 'Hannah Meyer', status: null }
+        ];
 
-    let selectedDay = '';
-    let selectedClass = '';
-    let studentsHistory = [];
-    let resumeUrl = '';
+        let selectedDay = '';
+        let selectedClass = '';
+        let studentsHistory = []; // Stack für Rückgängig-Funktion
+        let resumeUrl = ''; // Globale Variable für die Resume-URL
 
-    const correctPassword = '123';
-
-    // Passwort prüfen
-    function checkPassword() {
-        const password = document.getElementById('passwordInput').value;
-        const errorMsg = document.getElementById('errorMessage');
         
-        if (password === correctPassword) {
-            errorMsg.style.display = 'none';
-            document.getElementById('passwordInput').value = '';
-            sendWebhook(password);
-        } else {
-            errorMsg.style.display = 'block';
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordInput').focus();
-        }
-    }
+// Passwort (kann hier geändert werden)
+const correctPassword = '123';
 
-    // Webhook an n8n senden (Initial)
-    async function sendWebhook(password) {
-        const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
-        
-        try {
-            const response = await fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-KEY': password
-                },
-                body: JSON.stringify({
-                    password: password,
-                    timestamp: new Date().toISOString(),
-                    action: 'login'
-                })
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Webhook erfolgreich gesendet:', result);
-                
-                if (result.resumeUrl) {
-                    resumeUrl = result.resumeUrl;
-                }
-                
-                handleSuccess(result);
-            } else {
-                console.error('Webhook-Fehler:', response.status);
-                handleError('Verbindungsfehler');
-            }
-        } catch (error) {
-            console.error('Fehler beim Webhook-Aufruf:', error);
-            handleError('Netzwerkfehler');
-        }
-    }
-
-    function handleSuccess(data) {
-        document.getElementById('startScreen').classList.add('hidden');
-        document.getElementById('dayScreen').classList.remove('hidden');
-    }
-
-    function handleError(message) {
-        const errorMsg = document.getElementById('errorMessage');
-        errorMsg.textContent = message;
+// Passwort prüfen
+function checkPassword() {
+    const password = document.getElementById('passwordInput').value;
+    const errorMsg = document.getElementById('errorMessage');
+    
+    if (password === correctPassword) {
+        errorMsg.style.display = 'none';
+        document.getElementById('passwordInput').value = '';
+        sendWebhook(password);
+    } else {
         errorMsg.style.display = 'block';
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordInput').focus();
     }
+}
 
-    const classesPerDay = {
-        'Samstag': [
-            ['Klasse 1', 'Klasse 2'],
-            ['Klasse 3 Quran', 'Klasse 3 Deen'],
-            ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
-        ],
-        'Sonntag': [
-            ['Vorschule'],
-            ['Klasse 1', 'Klasse 2'],
-            ['Klasse 3 Quran', 'Klasse 3 Deen'],
-            ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
-        ]
-    };
-
-    function selectDay(day) {
-        selectedDay = day;
-        document.getElementById('dayScreen').classList.add('hidden');
-        
-        const classButtons = document.getElementById('classButtons');
-        classButtons.innerHTML = '';
-        
-        const classRows = classesPerDay[day];
-        classRows.forEach(row => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
-            
-            row.forEach(className => {
-                const button = document.createElement('button');
-                button.className = 'btn-primary';
-                button.textContent = className;
-                button.onclick = () => selectClass(className);
-                rowDiv.appendChild(button);
-            });
-            
-            classButtons.appendChild(rowDiv);
+// Webhook an n8n senden (Initial)
+async function sendWebhook(password) {
+    const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
+    
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': password
+            },
+            body: JSON.stringify({
+                password: password,
+                timestamp: new Date().toISOString(),
+                action: 'login'
+            })
         });
         
-        document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
-        document.getElementById('classScreen').classList.remove('hidden');
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Webhook erfolgreich gesendet:', result);
+            
+            // resumeUrl von n8n speichern
+            if (result.resumeUrl) {
+                resumeUrl = result.resumeUrl;
+            }
+            
+            handleSuccess(result);
+        } else {
+            console.error('Webhook-Fehler:', response.status);
+            handleError('Verbindungsfehler');
+        }
+    } catch (error) {
+        console.error('Fehler beim Webhook-Aufruf:', error);
+        handleError('Netzwerkfehler');
     }
+}
 
-    async function selectClass(className) {
-        selectedClass = className;
-        
-        const classData = {
-            weekday: selectedDay,
-            className: `${selectedDay} ${className}`,
-            selectedDay: selectedDay,
-            selectedClass: className,
-            timestamp: new Date().toISOString()
+// Beispiel wenn n8n eine executionId zurückgibt
+function handleSuccess(data) {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('dayScreen').classList.remove('hidden');
+}
+
+// Fehler behandeln
+function handleError(message) {
+    const errorMsg = document.getElementById('errorMessage');
+    errorMsg.textContent = message;
+    errorMsg.style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+}
+
+        // App starten - zur Tag-Auswahl
+        function startApp() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
+        const classesPerDay = {
+            'Samstag': [
+                ['Klasse 1', 'Klasse 2'],
+                ['Klasse 3 Quran', 'Klasse 3 Deen'],
+                ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
+            ],
+            'Sonntag': [
+                ['Vorschule'],
+                ['Klasse 1', 'Klasse 2'],
+                ['Klasse 3 Quran', 'Klasse 3 Deen'],
+                ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
+            ]
         };
-        
-        if (resumeUrl) {
-            try {
-                const response = await fetch(resumeUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(classData)
+
+        // App starten - zur Tag-Auswahl
+        function startApp() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
+
+        // Klassen für jeden Tag (als Reihen organisiert)
+        function selectDay(day) {
+            selectedDay = day;
+            document.getElementById('dayScreen').classList.add('hidden');
+            
+            // Klassen-Buttons erstellen
+            const classButtons = document.getElementById('classButtons');
+            classButtons.innerHTML = '';
+            
+            const classRows = classesPerDay[day];
+            classRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
+                
+                row.forEach(className => {
+                    const button = document.createElement('button');
+                    button.className = 'btn-primary';
+                    button.textContent = className;
+                    button.onclick = () => selectClass(className);
+                    rowDiv.appendChild(button);
                 });
                 
-                if (response.ok) {
-                    console.log('Klassenwahl erfolgreich an n8n gesendet:', classData);
-                } else {
-                    console.error('Fehler beim Senden an n8n:', response.status);
-                }
-            } catch (error) {
-                console.error('Fehler beim Senden der Klassenwahl:', error);
-            }
-        }
-        
-        document.getElementById('classScreen').classList.add('hidden');
-        document.getElementById('mainScreen').style.display = 'block';
-        document.getElementById('mainScreen').classList.remove('hidden');
-        document.getElementById('classTitle').textContent = className;
-        studentsHistory = [];
-        saveHistory();
-        renderStudents();
-    }
-
-    function goBackToStart() {
-        document.getElementById('dayScreen').classList.add('hidden');
-        document.getElementById('startScreen').classList.remove('hidden');
-        document.getElementById('errorMessage').style.display = 'none';
-    }
-
-    function goBackToDay() {
-        document.getElementById('classScreen').classList.add('hidden');
-        document.getElementById('dayScreen').classList.remove('hidden');
-    }
-
-    function goBack() {
-        document.getElementById('mainScreen').classList.add('hidden');
-        document.getElementById('classScreen').classList.remove('hidden');
-        resetAttendance();
-    }
-
-    function saveHistory() {
-        studentsHistory.push(JSON.parse(JSON.stringify(students)));
-        if (studentsHistory.length > 50) {
-            studentsHistory.shift();
-        }
-        checkUndoButton();
-    }
-
-    function checkUndoButton() {
-        document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
-    }
-
-    function undoChanges() {
-        if (studentsHistory.length <= 1) {
-            return;
-        }
-        
-        studentsHistory.pop();
-        const previousState = studentsHistory[studentsHistory.length - 1];
-        students.length = 0;
-        students.push(...JSON.parse(JSON.stringify(previousState)));
-        
-        renderStudents();
-    }
-
-    function resetAttendance() {
-        students.forEach(student => student.status = null);
-        renderStudents();
-    }
-
-    function renderStudents() {
-        const list = document.getElementById('studentsList');
-        list.innerHTML = '';
-
-        students.forEach(student => {
-            const card = document.createElement('div');
-            card.className = 'student-card';
+                classButtons.appendChild(rowDiv);
+            });
             
-            card.innerHTML = `
-                <div class="student-name">${student.name}</div>
-                <div class="student-actions">
-                    <div class="status-buttons">
-                        <button 
-                            class="btn-status ${student.status === 'present' ? 'present' : ''}" 
-                            onclick="toggleStatus(${student.id}, 'present')"
-                        >✓</button>
-                        <button 
-                            class="btn-status ${student.status === 'late' ? 'late' : ''}" 
-                            onclick="toggleStatus(${student.id}, 'late')"
-                        >🕐</button>
-                        <button 
-                            class="btn-status ${student.status === 'absent' ? 'absent' : ''}" 
-                            onclick="toggleStatus(${student.id}, 'absent')"
-                        >✕</button>
-                    </div>
-                    <button 
-                        class="btn-delete" 
-                        onclick="deleteStudent(${student.id})"
-                        title="Schüler entfernen"
-                    >🗑️</button>
-                </div>
-            `;
-            
-            list.appendChild(card);
-        });
+            document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
+            document.getElementById('classScreen').classList.remove('hidden');
+        }
 
-        updateStats();
-        checkUndoButton();
-    }
-
-    function toggleStatus(id, status) {
-        saveHistory();
-        const student = students.find(s => s.id === id);
-        if (student) {
-            student.status = student.status === status ? null : status;
+        // Klasse auswählen
+        function selectClass(className) {
+            selectedClass = className;
+            document.getElementById('classScreen').classList.add('hidden');
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('mainScreen').classList.remove('hidden');
+            document.getElementById('classTitle').textContent = className;
+            studentsHistory = []; // History zurücksetzen
+            saveHistory(); // Initial-Zustand speichern
             renderStudents();
         }
-    }
 
-    function updateStats() {
-        const present = students.filter(s => s.status === 'present').length;
-        const absent = students.filter(s => s.status === 'absent').length;
-        const late = students.filter(s => s.status === 'late').length;
-
-        document.getElementById('statTotal').textContent = students.length;
-        document.getElementById('statPresent').textContent = present;
-        document.getElementById('statAbsent').textContent = absent;
-        document.getElementById('statLate').textContent = late;
-    }
-
-    function addStudent() {
-        const firstName = document.getElementById('firstNameInput').value.trim();
-        const lastName = document.getElementById('lastNameInput').value.trim();
-
-        if (!firstName || !lastName) {
-            alert('Bitte geben Sie Vor- und Nachname ein.');
-            return;
+        // Zurück zur Startseite
+        function goBackToStart() {
+            document.getElementById('dayScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
-        saveHistory();
+        // Zurück zur Tag-Auswahl
+        function goBackToDay() {
+            document.getElementById('classScreen').classList.add('hidden');
+            document.getElementById('dayScreen').classList.remove('hidden');
+        }
 
-        const newStudent = {
-            id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
-            name: `${firstName} ${lastName}`,
-            status: null
-        };
+        // Zurück zur Klassen-Auswahl
+        function goBack() {
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('classScreen').classList.remove('hidden');
+            resetAttendance();
+        }
 
-        students.push(newStudent);
-        
-        document.getElementById('firstNameInput').value = '';
-        document.getElementById('lastNameInput').value = '';
+        // History speichern
+        function saveHistory() {
+            // Aktuellen Zustand im History-Stack speichern
+            studentsHistory.push(JSON.parse(JSON.stringify(students)));
+            // Maximal 50 Schritte speichern
+            if (studentsHistory.length > 50) {
+                studentsHistory.shift();
+            }
+            checkUndoButton();
+        }
 
-        renderStudents();
-    }
+        // Prüfen ob Undo-Button angezeigt werden soll
+        function checkUndoButton() {
+            // Button anzeigen wenn mehr als ein Zustand gespeichert ist
+            document.getElementById('undoBtn').style.display = studentsHistory.length > 1 ? 'block' : 'none';
+        }
 
-    function deleteStudent(id) {
-        const student = students.find(s => s.id === id);
-        if (!student) return;
+        // Änderungen rückgängig machen
+        function undoChanges() {
+            if (studentsHistory.length <= 1) {
+                return; // Nichts zum Rückgängig machen
+            }
+            
+            // Aktuellen Zustand entfernen
+            studentsHistory.pop();
+            
+            // Vorherigen Zustand wiederherstellen
+            const previousState = studentsHistory[studentsHistory.length - 1];
+            students.length = 0;
+            students.push(...JSON.parse(JSON.stringify(previousState)));
+            
+            renderStudents();
+        }
 
-        if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
-            saveHistory();
-            const index = students.findIndex(s => s.id === id);
-            if (index > -1) {
-                students.splice(index, 1);
+        // Anwesenheit zurücksetzen
+        function resetAttendance() {
+            students.forEach(student => student.status = null);
+            document.getElementById('classInput').value = '';
+            renderStudents();
+        }
+
+        // Schüler rendern
+        function renderStudents() {
+            const list = document.getElementById('studentsList');
+            list.innerHTML = '';
+
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                
+                card.innerHTML = `
+                    <div class="student-name">${student.name}</div>
+                    <div class="student-actions">
+                        <div class="status-buttons">
+                            <button 
+                                class="btn-status ${student.status === 'present' ? 'present' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'present')"
+                            >✓</button>
+                            <button 
+                                class="btn-status ${student.status === 'late' ? 'late' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'late')"
+                            >🕐</button>
+                            <button 
+                                class="btn-status ${student.status === 'absent' ? 'absent' : ''}" 
+                                onclick="toggleStatus(${student.id}, 'absent')"
+                            >✕</button>
+                        </div>
+                        <button 
+                            class="btn-delete" 
+                            onclick="deleteStudent(${student.id})"
+                            title="Schüler entfernen"
+                        >🗑️</button>
+                    </div>
+                `;
+                
+                list.appendChild(card);
+            });
+
+            updateStats();
+            checkUndoButton();
+        }
+
+        // Status umschalten
+        function toggleStatus(id, status) {
+            saveHistory(); // Zustand vor Änderung speichern
+            const student = students.find(s => s.id === id);
+            if (student) {
+                student.status = student.status === status ? null : status;
                 renderStudents();
             }
         }
-    }
 
-    function saveAttendance() {
-        if (students.length === 0) {
-            alert('Es sind keine Schüler in der Liste.');
-            return;
+        // Statistiken aktualisieren
+        function updateStats() {
+            const present = students.filter(s => s.status === 'present').length;
+            const absent = students.filter(s => s.status === 'absent').length;
+            const late = students.filter(s => s.status === 'late').length;
+
+            document.getElementById('statTotal').textContent = students.length;
+            document.getElementById('statPresent').textContent = present;
+            document.getElementById('statAbsent').textContent = absent;
+            document.getElementById('statLate').textContent = late;
         }
 
-        const data = {
-            day: selectedDay,
-            class: selectedClass,
-            date: new Date().toLocaleDateString('de-DE'),
-            time: new Date().toLocaleTimeString('de-DE'),
-            students: students
-        };
+        // Neuen Schüler hinzufügen
+        function addStudent() {
+            const firstName = document.getElementById('firstNameInput').value.trim();
+            const lastName = document.getElementById('lastNameInput').value.trim();
 
-        console.log('Gespeicherte Anwesenheit:', data);
-        alert(`Anwesenheit für ${selectedDay} - ${selectedClass} wurde erfolgreich gespeichert!`);
-    }
-</script>
+            if (!firstName || !lastName) {
+                alert('Bitte geben Sie Vor- und Nachname ein.');
+                return;
+            }
+
+            saveHistory(); // Zustand vor Änderung speichern
+
+            const newStudent = {
+                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
+                name: `${firstName} ${lastName}`,
+                status: null
+            };
+
+            students.push(newStudent);
+            
+            // Eingabefelder leeren
+            document.getElementById('firstNameInput').value = '';
+            document.getElementById('lastNameInput').value = '';
+
+            renderStudents();
+        }
+
+        // Schüler löschen
+        function deleteStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+
+            if (confirm(`Möchten Sie "${student.name}" wirklich aus der Liste entfernen?`)) {
+                saveHistory(); // Zustand vor Änderung speichern
+                const index = students.findIndex(s => s.id === id);
+                if (index > -1) {
+                    students.splice(index, 1);
+                    renderStudents();
+                }
+            }
+        }
+
+        // Anwesenheit speichern
+        function saveAttendance() {
+            if (students.length === 0) {
+                alert('Es sind keine Schüler in der Liste.');
+                return;
+            }
+
+            const data = {
+                day: selectedDay,
+                class: selectedClass,
+                date: new Date().toLocaleDateString('de-DE'),
+                time: new Date().toLocaleTimeString('de-DE'),
+                students: students
+            };
+
+            console.log('Gespeicherte Anwesenheit:', data);
+            alert(`Anwesenheit für ${selectedDay} - ${selectedClass} wurde erfolgreich gespeichert!`);
+        }
+    </script>
 </body>
 </html>
