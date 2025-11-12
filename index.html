@@ -594,9 +594,14 @@ async function sendWebhook(password) {
 
 // Beispiel wenn n8n eine executionId zurückgibt
 function handleSuccess(data) {
+    // resumeUrl von n8n speichern
+    if (data.resumeUrl) {
+        resumeUrl = data.resumeUrl;
+        console.log('Resume URL gespeichert:', resumeUrl);
+    }
+    
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('dayScreen').classList.remove('hidden');
-}
 
 // Fehler behandeln
 function handleError(message) {
@@ -606,6 +611,51 @@ function handleError(message) {
     document.getElementById('passwordInput').value = '';
     document.getElementById('passwordInput').focus();
 }
+
+// Klasse auswählen und an n8n senden
+async function selectClass(className) {
+    selectedClass = className;
+    
+    // Daten als JSON vorbereiten
+    const classData = {
+        weekday: selectedDay,
+        className: `${selectedDay} ${className}`,
+        selectedDay: selectedDay,
+        selectedClass: className,
+        timestamp: new Date().toISOString()
+    };
+    
+    // An resumeUrl senden (falls vorhanden)
+    if (resumeUrl) {
+        try {
+            const response = await fetch(resumeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(classData)
+            });
+            
+            if (response.ok) {
+                console.log('Klassenwahl erfolgreich an n8n gesendet:', classData);
+            } else {
+                console.error('Fehler beim Senden an n8n:', response.status);
+            }
+        } catch (error) {
+            console.error('Fehler beim Senden der Klassenwahl:', error);
+        }
+    }
+    
+    // UI aktualisieren
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('classTitle').textContent = className;
+    studentsHistory = [];
+    saveHistory();
+    renderStudents();
+}
+
 
         // App starten - zur Tag-Auswahl
         function startApp() {
