@@ -639,17 +639,46 @@
             document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
             document.getElementById('classScreen').classList.remove('hidden');
         }
-
-        function selectClass(className) {
-            selectedClass = className;
-            document.getElementById('classScreen').classList.add('hidden');
-            document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('mainScreen').classList.remove('hidden');
-            document.getElementById('classTitle').textContent = className;
-            studentsHistory = [];
-            saveHistory();
-            renderStudents();
+async function selectClass(className) {
+    selectedClass = className;
+    
+    // JSON-Daten vorbereiten
+    const classData = {
+        day: selectedDay,
+        class: selectedClass,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Daten an resumeUrl senden
+    if (resumeUrl) {
+        try {
+            const response = await fetch(resumeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(classData)
+            });
+            
+            if (response.ok) {
+                console.log('Klassendaten erfolgreich gesendet:', classData);
+            } else {
+                console.error('Fehler beim Senden der Klassendaten:', response.status);
+            }
+        } catch (error) {
+            console.error('Netzwerkfehler beim Senden der Klassendaten:', error);
         }
+    }
+    
+    // UI-Updates wie gewohnt
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('classTitle').textContent = className;
+    studentsHistory = [];
+    saveHistory();
+    renderStudents();
+}
 
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
