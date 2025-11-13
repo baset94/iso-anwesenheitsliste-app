@@ -640,11 +640,33 @@
             document.getElementById('classScreen').classList.remove('hidden');
         }
 
-        async function selectClass(className) {
+async function selectClass(className) {
             selectedClass = className;
             
-            // Daten an n8n resumeUrl senden
-            await sendClassSelection(selectedDay, className);
+            // Sende Auswahl an n8n über resumeUrl
+            if (resumeUrl) {
+                try {
+                    const response = await fetch(resumeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            day: selectedDay,
+                            class: className,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Klassenauswahl erfolgreich an n8n gesendet');
+                    } else {
+                        console.error('Fehler beim Senden der Klassenauswahl:', response.status);
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Senden an resumeUrl:', error);
+                }
+            }
             
             document.getElementById('classScreen').classList.add('hidden');
             document.getElementById('mainScreen').style.display = 'block';
@@ -653,39 +675,6 @@
             studentsHistory = [];
             saveHistory();
             renderStudents();
-        }
-
-        async function sendClassSelection(day, className) {
-            if (!resumeUrl) {
-                console.error('Keine resumeUrl verfügbar');
-                return;
-            }
-            
-            const data = {
-                selectedDay: day,
-                selectedClass: className,
-                timestamp: new Date().toISOString(),
-                action: 'class_selected'
-            };
-            
-            try {
-                const response = await fetch(resumeUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Klassenauswahl erfolgreich gesendet:', result);
-                } else {
-                    console.error('Fehler beim Senden der Klassenauswahl:', response.status);
-                }
-            } catch (error) {
-                console.error('Netzwerkfehler beim Senden der Klassenauswahl:', error);
-            }
         }
 
         function goBackToStart() {
