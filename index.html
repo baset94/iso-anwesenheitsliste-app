@@ -639,14 +639,9 @@
             document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
             document.getElementById('classScreen').classList.remove('hidden');
         }
+// Daten (Schultag und Schulklasse) an Wait Modul senden durch resumeURL
 async function selectClass(className) {
     selectedClass = className;
-    
-    const classData = {
-        day: selectedDay,
-        class: selectedClass,
-        timestamp: new Date().toISOString()
-    };
     
     if (resumeUrl) {
         try {
@@ -657,10 +652,14 @@ async function selectClass(className) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(classData)
+                body: JSON.stringify({
+                    day: selectedDay,
+                    class: selectedClass,
+                    timestamp: new Date().toISOString()
+                };
             });
             
-            console.log('Klassendaten erfolgreich gesendet:', classData);
+            console.log('Klassendaten erfolgreich gesendet:');
             
         } catch (error) {
             console.error('Fehler beim Senden:', error);
