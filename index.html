@@ -404,6 +404,13 @@
             padding: 16px;
         }
 
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6B7280;
+        }
+
         /* Responsive Design */
         @media (max-width: 640px) {
             .stats-grid {
@@ -473,7 +480,7 @@
 
             <div class="stats-grid">
                 <div class="stat-card total">
-                    <div class="stat-number" id="statTotal">8</div>
+                    <div class="stat-number" id="statTotal">0</div>
                     <div class="stat-label">Gesamt</div>
                 </div>
                 <div class="stat-card present">
@@ -500,7 +507,9 @@
             </div>
         </div>
 
-        <div class="students-list" id="studentsList"></div>
+        <div class="students-list" id="studentsList">
+            <div class="loading">Schülerdaten werden geladen...</div>
+        </div>
 
         <div class="save-card">
             <button class="btn-undo" onclick="undoChanges()" id="undoBtn" style="display: none;">Änderungen rückgängig machen</button>
@@ -514,11 +523,12 @@
         // ============================================
         const correctPassword = '123';
         const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
-        //const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook/a6e681aa-ee3b-4d07-84da-be73431b74c7';
+        
         let selectedDay = '';
         let selectedClass = '';
         let resumeUrl = '';
         let studentsHistory = [];
+        let students = []; // ✅ Jetzt leer - wird von n8n gefüllt
 
         const classesPerDay = {
             'Samstag': [
@@ -533,17 +543,6 @@
                 ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
             ]
         };
-
-        const students = [
-            { id: 1, name: 'Anna Müller', status: null },
-            { id: 2, name: 'Ben Schmidt', status: null },
-            { id: 3, name: 'Clara Wagner', status: null },
-            { id: 4, name: 'David Fischer', status: null },
-            { id: 5, name: 'Emma Bauer', status: null },
-            { id: 6, name: 'Felix Weber', status: null },
-            { id: 7, name: 'Greta Koch', status: null },
-            { id: 8, name: 'Hannah Meyer', status: null }
-        ];
 
         // ============================================
         // Authentifizierung & Webhook
@@ -639,43 +638,70 @@
             document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
             document.getElementById('classScreen').classList.remove('hidden');
         }
-// Daten (Schultag und Schulklasse) an Wait Modul senden durch resumeURL
-async function selectClass(className) {
-    selectedClass = className;
-    
-    if (resumeUrl) {
-        try {
-            // ✅ WICHTIG: mode: 'no-cors' umgeht den CORS-Fehler
-            await fetch(resumeUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    day: selectedDay,
-                    class: selectedClass,
-                    timestamp: new Date().toISOString()
-                }) 
-            });
-            
-            console.log('Klassendaten erfolgreich gesendet');
-            
-        } catch (error) {
-            console.error('Fehler beim Senden:', error);
-        }
-    }
-    
-    // UI-Updates
-    document.getElementById('classScreen').classList.add('hidden');
-    document.getElementById('mainScreen').style.display = 'block';
-    document.getElementById('mainScreen').classList.remove('hidden');
-    document.getElementById('classTitle').textContent = className;
-    studentsHistory = [];
-    saveHistory();
-    renderStudents();
-}
 
+        // ✅ NEUE FUNKTION: Schülerdaten von n8n empfangen
+        async function selectClass(className) {
+            selectedClass = className;
+            
+            // Hauptscreen anzeigen mit Ladeanimation
+            document.getElementById('classScreen').classList.add('hidden');
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('mainScreen').classList.remove('hidden');
+            document.getElementById('classTitle').textContent = className + ' - Lädt...';
+            document.getElementById('studentsList').innerHTML = '<div class="loading">Schülerdaten werden geladen...</div>';
+            
+            if (resumeUrl) {
+                try {
+                    // Klassendaten an n8n senden und Schülerliste empfangen
+                    const response = await fetch(resumeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            day: selectedDay,
+                            class: selectedClass,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Response von n8n:', result);
+                        
+                        // ✅ Schülerdaten von n8n empfangen und verarbeiten
+                        if (result.students && Array.isArray(result.students)) {
+                            students = result.students.map((student, index) => ({
+                                id: student.id || index + 1,
+                                name: student.name,
+                                status: null
+                            }));
+                            
+                            console.log('Schüler geladen:', students);
+                        } else {
+                            console.warn('Keine Schüler gefunden in Response');
+                            students = [];
+                        }
+                        
+                        // Titel aktualisieren und Liste rendern
+                        document.getElementById('classTitle').textContent = className;
+                        studentsHistory = [];
+                        saveHistory();
+                        renderStudents();
+                        
+                    } else {
+                        console.error('Fehler beim Laden der Schüler:', response.status);
+                        document.getElementById('studentsList').innerHTML = '<div class="loading">Fehler beim Laden der Schülerliste</div>';
+                    }
+                    
+                } catch (error) {
+                    console.error('Fehler:', error);
+                    document.getElementById('studentsList').innerHTML = '<div class="loading">Netzwerkfehler beim Laden der Schülerliste</div>';
+                }
+            } else {
+                document.getElementById('studentsList').innerHTML = '<div class="loading">Keine Verbindung zu n8n</div>';
+            }
+        }
 
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
@@ -691,6 +717,7 @@ async function selectClass(className) {
         function goBack() {
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('classScreen').classList.remove('hidden');
+            students = [];
             resetAttendance();
         }
 
@@ -700,6 +727,11 @@ async function selectClass(className) {
         function renderStudents() {
             const list = document.getElementById('studentsList');
             list.innerHTML = '';
+
+            if (students.length === 0) {
+                list.innerHTML = '<div class="loading">Keine Schüler in dieser Klasse</div>';
+                return;
+            }
 
             students.forEach(student => {
                 const card = document.createElement('div');
@@ -801,7 +833,9 @@ async function selectClass(className) {
 
         function resetAttendance() {
             students.forEach(student => student.status = null);
-            renderStudents();
+            if (students.length > 0) {
+                renderStudents();
+            }
         }
 
         // ============================================
