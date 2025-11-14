@@ -642,35 +642,32 @@
 async function selectClass(className) {
     selectedClass = className;
     
-    // JSON-Daten vorbereiten
     const classData = {
         day: selectedDay,
         class: selectedClass,
         timestamp: new Date().toISOString()
     };
     
-    // Daten an resumeUrl senden
     if (resumeUrl) {
         try {
             const response = await fetch(resumeUrl, {
                 method: 'POST',
+                mode: 'no-cors', // ✅ Dies umgeht CORS
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(classData)
             });
             
-            if (response.ok) {
-                console.log('Klassendaten erfolgreich gesendet:', classData);
-            } else {
-                console.error('Fehler beim Senden der Klassendaten:', response.status);
-            }
+            // Bei no-cors wird immer status 0 zurückgegeben
+            console.log('Klassendaten gesendet:', classData);
+            
         } catch (error) {
-            console.error('Netzwerkfehler beim Senden der Klassendaten:', error);
+            console.error('Fehler beim Senden:', error);
         }
     }
     
-    // UI-Updates wie gewohnt
+    // UI-Updates
     document.getElementById('classScreen').classList.add('hidden');
     document.getElementById('mainScreen').style.display = 'block';
     document.getElementById('mainScreen').classList.remove('hidden');
