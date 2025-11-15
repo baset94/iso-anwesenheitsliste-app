@@ -509,146 +509,140 @@
     </div>
 
     <script>
-        // ============================================
-        // Globale Variablen und Konfiguration
-        // ============================================
-        const correctPassword = '123';
-        const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
-        //const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook/a6e681aa-ee3b-4d07-84da-be73431b74c7';
-        let selectedDay = '';
-        let selectedClass = '';
-        let resumeUrl = '';
-        let studentsHistory = [];
+    // ============================================
+// Globale Variablen und Konfiguration
+// ============================================
+const correctPassword = '123';
+const webhookUrl = 'https://n8n.autoprozessagentur.cloud/webhook-test/a6e681aa-ee3b-4d07-84da-be73431b74c7';
+let selectedDay = '';
+let selectedClass = '';
+let resumeUrl = '';
+let studentsHistory = [];
 
-        const classesPerDay = {
-            'Samstag': [
-                ['Klasse 1', 'Klasse 2'],
-                ['Klasse 3 Quran', 'Klasse 3 Deen'],
-                ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
-            ],
-            'Sonntag': [
-                ['Vorschule'],
-                ['Klasse 1', 'Klasse 2'],
-                ['Klasse 3 Quran', 'Klasse 3 Deen'],
-                ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
-            ]
-        };
+// Unterrichtstage/Klassen-Struktur wie gehabt
+const classesPerDay = {
+    'Samstag': [
+        ['Klasse 1', 'Klasse 2'],
+        ['Klasse 3 Quran', 'Klasse 3 Deen'],
+        ['Klasse 4 Quran Jungs', 'Klasse 4 Deen Jungs']
+    ],
+    'Sonntag': [
+        ['Vorschule'],
+        ['Klasse 1', 'Klasse 2'],
+        ['Klasse 3 Quran', 'Klasse 3 Deen'],
+        ['Klasse 4 Quran Mädchen', 'Klasse 4 Deen Mädchen']
+    ]
+};
 
-        const students = [
-            { id: 1, name: 'Anna Müller', status: null },
-            { id: 2, name: 'Ben Schmidt', status: null },
-            { id: 3, name: 'Clara Wagner', status: null },
-            { id: 4, name: 'David Fischer', status: null },
-            { id: 5, name: 'Emma Bauer', status: null },
-            { id: 6, name: 'Felix Weber', status: null },
-            { id: 7, name: 'Greta Koch', status: null },
-            { id: 8, name: 'Hannah Meyer', status: null }
-        ];
+// KEINE lokalen Beispielschüler mehr!
+const students = [];
 
-        // ============================================
-        // Authentifizierung & Webhook
-        // ============================================
-        function checkPassword() {
-            const password = document.getElementById('passwordInput').value;
-            const errorMsg = document.getElementById('errorMessage');
-            
-            if (password === correctPassword) {
-                errorMsg.style.display = 'none';
-                document.getElementById('passwordInput').value = '';
-                sendWebhook(password);
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
+// ============================================
+// Authentifizierung & Webhook
+// ============================================
+function checkPassword() {
+    const password = document.getElementById('passwordInput').value;
+    const errorMsg = document.getElementById('errorMessage');
+
+    if (password === correctPassword) {
+        errorMsg.style.display = 'none';
+        document.getElementById('passwordInput').value = '';
+        sendWebhook(password);
+    } else {
+        errorMsg.style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+    }
+}
+
+async function sendWebhook(password) {
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': password
+            },
+            body: JSON.stringify({
+                password: password,
+                timestamp: new Date().toISOString(),
+                action: 'login'
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.resumeUrl) {
+                resumeUrl = result.resumeUrl;
             }
+            handleSuccess();
+        } else {
+            handleError('Verbindungsfehler');
         }
+    } catch (error) {
+        handleError('Netzwerkfehler');
+    }
+}
 
-        async function sendWebhook(password) {
-            try {
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-KEY': password
-                    },
-                    body: JSON.stringify({
-                        password: password,
-                        timestamp: new Date().toISOString(),
-                        action: 'login'
-                    })
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Webhook erfolgreich gesendet:', result);
-                    
-                    if (result.resumeUrl) {
-                        resumeUrl = result.resumeUrl;
-                    }
-                    
-                    handleSuccess();
-                } else {
-                    console.error('Webhook-Fehler:', response.status);
-                    handleError('Verbindungsfehler');
-                }
-            } catch (error) {
-                console.error('Fehler beim Webhook-Aufruf:', error);
-                handleError('Netzwerkfehler');
-            }
-        }
+function handleSuccess() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('dayScreen').classList.remove('hidden');
+}
 
-        function handleSuccess() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('dayScreen').classList.remove('hidden');
-        }
+function handleError(message) {
+    const errorMsg = document.getElementById('errorMessage');
+    errorMsg.textContent = message;
+    errorMsg.style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+}
 
-        function handleError(message) {
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordInput').focus();
-        }
+// ============================================
+// Navigation zwischen Screens
+// ============================================
+function selectDay(day) {
+    selectedDay = day;
+    document.getElementById('dayScreen').classList.add('hidden');
 
-        // ============================================
-        // Navigation zwischen Screens
-        // ============================================
-        function selectDay(day) {
-            selectedDay = day;
-            document.getElementById('dayScreen').classList.add('hidden');
-            
-            const classButtons = document.getElementById('classButtons');
-            classButtons.innerHTML = '';
-            
-            const classRows = classesPerDay[day];
-            classRows.forEach(row => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
-                
-                row.forEach(className => {
-                    const button = document.createElement('button');
-                    button.className = 'btn-primary';
-                    button.textContent = className;
-                    button.onclick = () => selectClass(className);
-                    rowDiv.appendChild(button);
-                });
-                
-                classButtons.appendChild(rowDiv);
-            });
-            
-            document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
-            document.getElementById('classScreen').classList.remove('hidden');
-        }
-// Daten (Schultag und Schulklasse) an Wait Modul senden durch resumeURL
+    const classButtons = document.getElementById('classButtons');
+    classButtons.innerHTML = '';
+
+    const classRows = classesPerDay[day];
+    classRows.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = row.length === 1 ? 'class-row single' : 'class-row';
+
+        row.forEach(className => {
+            const button = document.createElement('button');
+            button.className = 'btn-primary';
+            button.textContent = className;
+            button.onclick = () => selectClass(className);
+            rowDiv.appendChild(button);
+        });
+
+        classButtons.appendChild(rowDiv);
+    });
+
+    document.getElementById('classSubtitle').textContent = `${day} - Wählen Sie die Klasse`;
+    document.getElementById('classScreen').classList.remove('hidden');
+}
+
+// ============================================
+// Klasse wählen & Schüler von n8n laden
+// ============================================
 async function selectClass(className) {
     selectedClass = className;
-    
+
+    // Lade-Indikator anzeigen
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('classTitle').textContent = className + ' - Lädt Schüler...';
+
     if (resumeUrl) {
         try {
-            // ✅ WICHTIG: mode: 'no-cors' umgeht den CORS-Fehler
-            await fetch(resumeUrl, {
+            const response = await fetch(resumeUrl, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -658,24 +652,40 @@ async function selectClass(className) {
                     timestamp: new Date().toISOString()
                 }) 
             });
-            
-            console.log('Klassendaten erfolgreich gesendet');
-            
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Schülerliste leeren und neu befüllen
+            students.length = 0;
+
+            if (data.students && Array.isArray(data.students)) {
+                data.students.forEach((student, index) => {
+                    students.push({
+                        id: index + 1,
+                        name: `${student.vorname} ${student.nachname}`,
+                        status: null
+                    });
+                });
+            } else {
+                alert('Keine Schüler für diese Klasse gefunden');
+            }
+
         } catch (error) {
-            console.error('Fehler beim Senden:', error);
+            alert('Fehler beim Laden der Schülerliste. Bitte erneut versuchen.');
         }
+    } else {
+        alert('Verbindungsfehler. Bitte neu einloggen.');
     }
-    
-    // UI-Updates
-    document.getElementById('classScreen').classList.add('hidden');
-    document.getElementById('mainScreen').style.display = 'block';
-    document.getElementById('mainScreen').classList.remove('hidden');
+
     document.getElementById('classTitle').textContent = className;
     studentsHistory = [];
     saveHistory();
     renderStudents();
 }
-
 
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
