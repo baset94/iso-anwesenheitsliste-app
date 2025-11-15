@@ -633,7 +633,6 @@ function selectDay(day) {
 async function selectClass(className) {
     selectedClass = className;
 
-    // Lade-Indikator anzeigen
     document.getElementById('classScreen').classList.add('hidden');
     document.getElementById('mainScreen').style.display = 'block';
     document.getElementById('mainScreen').classList.remove('hidden');
@@ -641,27 +640,30 @@ async function selectClass(className) {
 
     if (resumeUrl) {
         try {
-            const response = await fetch(resumeUrl, {
+            // Schritt 1: Sende Auswahl an Wait-Node (no-cors)
+            await fetch(resumeUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                mode: 'no-cors',
                 body: JSON.stringify({
                     day: selectedDay,
-                    class: selectedClass,
-                    timestamp: new Date().toISOString()
+                    class: selectedClass
                 }) 
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
+            
+            // Schritt 2: Hole Schüler von separatem Webhook (MIT CORS)
+            const dataUrl = 'https://n8n.autoprozessagentur.cloud/webhook/GET-STUDENTS';
+            const response = await fetch(dataUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    day: selectedDay,
+                    class: selectedClass
+                })
+            });
+            
             const data = await response.json();
-
-            // Schülerliste leeren und neu befüllen
+            
             students.length = 0;
-
             if (data.students && Array.isArray(data.students)) {
                 data.students.forEach((student, index) => {
                     students.push({
@@ -670,15 +672,12 @@ async function selectClass(className) {
                         status: null
                     });
                 });
-            } else {
-                alert('Keine Schüler für diese Klasse gefunden');
             }
-
+            
         } catch (error) {
-            alert('Fehler beim Laden der Schülerliste. Bitte erneut versuchen.');
+            console.error('Fehler:', error);
+            alert('Fehler beim Laden der Schüler');
         }
-    } else {
-        alert('Verbindungsfehler. Bitte neu einloggen.');
     }
 
     document.getElementById('classTitle').textContent = className;
@@ -686,6 +685,7 @@ async function selectClass(className) {
     saveHistory();
     renderStudents();
 }
+
 
         function goBackToStart() {
             document.getElementById('dayScreen').classList.add('hidden');
