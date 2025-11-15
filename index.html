@@ -630,56 +630,60 @@ function selectDay(day) {
 // ============================================
 // Klasse wählen & Schüler von n8n laden
 // ============================================
+// Daten (Schultag und Schulklasse) an n8n senden und Schülerliste empfangen
 async function selectClass(className) {
     selectedClass = className;
-
-    document.getElementById('classScreen').classList.add('hidden');
-    document.getElementById('mainScreen').style.display = 'block';
-    document.getElementById('mainScreen').classList.remove('hidden');
-    document.getElementById('classTitle').textContent = className + ' - Lädt Schüler...';
-
+    
     if (resumeUrl) {
         try {
-            // Schritt 1: Sende Auswahl an Wait-Node (no-cors)
-            await fetch(resumeUrl, {
+            const response = await fetch(resumeUrl, {
                 method: 'POST',
-                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     day: selectedDay,
-                    class: selectedClass
+                    class: selectedClass,
+                    timestamp: new Date().toISOString()
                 }) 
             });
             
-            // Schritt 2: Hole Schüler von separatem Webhook (MIT CORS)
-            const dataUrl = 'https://n8n.autoprozessagentur.cloud/webhook/GET-STUDENTS';
-            const response = await fetch(dataUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    day: selectedDay,
-                    class: selectedClass
-                })
-            });
-            
-            const data = await response.json();
-            
-            students.length = 0;
-            if (data.students && Array.isArray(data.students)) {
-                data.students.forEach((student, index) => {
-                    students.push({
-                        id: index + 1,
-                        name: `${student.vorname} ${student.nachname}`,
-                        status: null
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Antwort von n8n:', result);
+                
+                // Schülerdaten verarbeiten
+                if (result.students && Array.isArray(result.students)) {
+                    // Schülerliste leeren
+                    students.length = 0;
+                    
+                    // Neue Schüler hinzufügen
+                    result.students.forEach((student, index) => {
+                        students.push({
+                            id: index + 1,
+                            name: `${student.vorname} ${student.nachname}`,
+                            status: null
+                        });
                     });
-                });
+                    
+                    console.log('Schüler erfolgreich geladen:', students);
+                } else {
+                    console.warn('Keine Schülerdaten in der Antwort gefunden');
+                }
+            } else {
+                console.error('Fehler beim Abrufen der Schülerdaten:', response.status);
             }
             
         } catch (error) {
-            console.error('Fehler:', error);
-            alert('Fehler beim Laden der Schüler');
+            console.error('Fehler beim Senden/Empfangen:', error);
+            alert('Fehler beim Laden der Schülerdaten. Bitte versuchen Sie es erneut.');
         }
     }
-
+    
+    // UI-Updates
+    document.getElementById('classScreen').classList.add('hidden');
+    document.getElementById('mainScreen').style.display = 'block';
+    document.getElementById('mainScreen').classList.remove('hidden');
     document.getElementById('classTitle').textContent = className;
     studentsHistory = [];
     saveHistory();
